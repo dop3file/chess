@@ -63,12 +63,13 @@ class Game:
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					click_position = pygame.mouse.get_pos()
-					print(self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)])
-					if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None:
+					if select_piece:
+						select_piece.move(position=Coordinates(x=int(click_position[1] / 100), y=int(click_position[0] / 100)))
+						select_piece = None
+					if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 						select_piece = piece
-					else:
-						if select_piece:
-							select_piece.move(position=Coordinates(x=int(click_position[1] / 100), y=int(click_position[0] / 100)))
+					
+						
 				if event.type == pygame.QUIT:
 					exit()
 				

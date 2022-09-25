@@ -45,23 +45,27 @@ class Pawn(Figure):
 
     def get_available_moves(self):
         available_moves = []
-        check_front = (self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y)])
-
-        if check_front == None:
-            available_moves.append(Coordinates(x=x, y=y))
-
-        if self.position == self.default_position and (self.board.board[(x := self.position.x + (2 * self.type_))][self.position.y]) == None and check_front == None:
-            available_moves.append(Coordinates(x=x, y=y))
-
-        if self.position.y != 7:
-            if (cell := self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y + 1)]) is not None:
-                if cell.type_ != self.type_:
-                    available_moves.append(Coordinates(x=x, y=y))
         
-        if self.position.y != 0:
-            if (cell := self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y - 1)]) is not None:
-                if cell.type_ != self.type_:
-                    available_moves.append(Coordinates(x=x, y=y))
+        if self.position.x not in (0, 7):
+            front_cell = (self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y)])
+
+            # проверяем есть ли перед пешкой другая фигура
+            if front_cell is None:
+                available_moves.append(Coordinates(x=x, y=y))
+
+            if self.position == self.default_position and (self.board.board[(x := self.position.x + (2 * self.type_))][self.position.y]) == None and front_cell == None:
+                available_moves.append(Coordinates(x=x, y=y))
+
+            if self.position.y != 7:
+                if (cell := self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y + 1)]) is not None:
+                    if cell.type_ != self.type_:
+                        print(1)
+                        available_moves.append(Coordinates(x=x, y=y))
+            
+            if self.position.y != 0:
+                if (cell := self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y - 1)]) is not None:
+                    if cell.type_ != self.type_:
+                        available_moves.append(Coordinates(x=x, y=y))
 
         return available_moves
 
