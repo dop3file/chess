@@ -1,18 +1,21 @@
 from abc import ABC, abstractmethod
 from headers import Coordinates
-from utils import check_horizontal_line, check_horizontal_line, check_vertical_line
+from utils import check_horizontal_line, check_horizontal_line, check_vertical_line, check_diagonal_line
 
 
 class Figure(ABC):
-    def __init__(self, position: Coordinates, name: str, board, type_):
+    def __init__(self, position: Coordinates, board, type_):
         self.position = position
-        self.name = name
+        self.name = self.__class__.__name__.lower()
         self.board = board
         self.type_ = type_
 
-    @abstractmethod
     def move(self, position: Coordinates):
-        pass
+        if position in self.get_available_moves():
+            if self.board.board[position.x][position.y] is not None:
+                self.board.dead_figures.append(self.board.board[position.x][position.y])
+            self.board.drag_figure(self.position, position)
+            self.position = position
 
     @abstractmethod
     def get_available_moves(self):
@@ -26,10 +29,9 @@ class Figure(ABC):
 
 
 class Pawn(Figure):
-    def __init__(self, position, name, board, type_):
+    def __init__(self, position, board, type_):
         super().__init__(
             position=position,
-            name=name,
             board=board,
             type_=type_
         )
@@ -77,10 +79,9 @@ class Pawn(Figure):
 
 
 class Rook(Figure):
-    def __init__(self, position, name, board, type_):
+    def __init__(self, position, board, type_):
         super().__init__(
             position=position,
-            name=name,
             board=board,
             type_=type_
         )
@@ -94,6 +95,91 @@ class Rook(Figure):
 
     def get_available_moves(self):
         available_moves = []
+        available_moves.extend(check_horizontal_line(self.board.board, self, True))
+        available_moves.extend(check_horizontal_line(self.board.board, self, False))
+        available_moves.extend(check_vertical_line(self.board.board, self, True))
+        available_moves.extend(check_vertical_line(self.board.board, self, False))
+
+        return available_moves
+
+
+class Knight(Figure):
+    def __init__(self, position, board, type_):
+        super().__init__(
+            position=position,
+            board=board,
+            type_=type_
+        )
+        
+    def move(self, position):
+        super().move(position)
+
+    def get_available_moves(self):
+        available_moves = []
+        
+
+        return available_moves
+
+
+class Bishop(Figure):
+    def __init__(self, position, board, type_):
+        super().__init__(
+            position=position,
+            board=board,
+            type_=type_
+        )
+        
+    def move(self, position):
+        super().move(position)
+
+    def get_available_moves(self):
+        available_moves = []
+        available_moves.extend(check_diagonal_line(self.board.board, self, True))
+        available_moves.extend(check_diagonal_line(self.board.board, self, False))
+
+        return available_moves
+
+
+class Queen(Figure):
+    def __init__(self, position, board, type_):
+        super().__init__(
+            position=position,
+            board=board,
+            type_=type_
+        )
+        
+    def move(self, position):
+        super().move(position)
+
+    def get_available_moves(self):
+        available_moves = []
+
+        available_moves.extend(check_diagonal_line(self.board.board, self, True))
+        available_moves.extend(check_diagonal_line(self.board.board, self, False))
+        available_moves.extend(check_horizontal_line(self.board.board, self, True))
+        available_moves.extend(check_horizontal_line(self.board.board, self, False))
+        available_moves.extend(check_vertical_line(self.board.board, self, True))
+        available_moves.extend(check_vertical_line(self.board.board, self, False))
+
+        return available_moves
+
+
+class King(Figure):
+    def __init__(self, position, board, type_):
+        super().__init__(
+            position=position,
+            board=board,
+            type_=type_
+        )
+        
+    def move(self, position):
+        super().move(position)
+
+    def get_available_moves(self):
+        available_moves = []
+
+        available_moves.extend(check_diagonal_line(self.board.board, self, True))
+        available_moves.extend(check_diagonal_line(self.board.board, self, False))
         available_moves.extend(check_horizontal_line(self.board.board, self, True))
         available_moves.extend(check_horizontal_line(self.board.board, self, False))
         available_moves.extend(check_vertical_line(self.board.board, self, True))

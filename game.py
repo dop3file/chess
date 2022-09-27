@@ -16,6 +16,14 @@ class Game:
 			'pawn_1': pygame.image.load(os.path.join("static/pawn_black.png")),
 			'rook_-1': pygame.image.load(os.path.join("static/rock.png")),
 			'rook_1': pygame.image.load(os.path.join("static/rock_black.png")),
+			'knight_-1': pygame.image.load(os.path.join("static/knight.png")),
+			'knight_1': pygame.image.load(os.path.join("static/knight_black.png")),
+			'bishop_1': pygame.image.load(os.path.join("static/bishop_black.png")),
+			'bishop_-1': pygame.image.load(os.path.join("static/bishop.png")),
+			'queen_-1': pygame.image.load(os.path.join("static/queen.png")),
+			'queen_1': pygame.image.load(os.path.join("static/queen_black.png")),
+			'king_-1': pygame.image.load(os.path.join("static/king.png")),
+			'king_1': pygame.image.load(os.path.join("static/queen_black.png")),
 		}
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
 
@@ -33,9 +41,9 @@ class Game:
 		select_piece = None
 
 		while True:
+			print(self.board.turn)
 			pygame.display.flip()
 			clock.tick(self.FPS)
-
 			# рисуем сетку
 			for num in range(self.WIDTH ** 2):
 				surface = pygame.Surface((100, 100))
@@ -63,12 +71,11 @@ class Game:
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					click_position = pygame.mouse.get_pos()
-					if select_piece:
+					if select_piece and select_piece.type_ == self.board.turn:
 						select_piece.move(position=Coordinates(x=int(click_position[1] / 100), y=int(click_position[0] / 100)))
 						select_piece = None
 					if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 						select_piece = piece
-					
 						
 				if event.type == pygame.QUIT:
 					exit()
