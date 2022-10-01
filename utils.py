@@ -65,14 +65,31 @@ def check_knight_avialable_moves(board, figure):
     Функция возвращает возможные ходы в виде буквы Г(для коня)
     '''
     avialable_moves = []
-
+    avialable_coords = [
+        [figure.position.x - 2, figure.position.y - 1],
+        [figure.position.x - 2, figure.position.y + 1],
+        [figure.position.x + 2, figure.position.y + 1],
+        [figure.position.x + 2, figure.position.y - 1],
+        [figure.position.x - 1, figure.position.y - 2],
+        [figure.position.x - 1, figure.position.y - 2],
+        [figure.position.x + 1, figure.position.y - 2],
+        [figure.position.x - 1, figure.position.y + 2],
+        [figure.position.x + 1, figure.position.y + 2]
+    ]
+    for x, y in avialable_coords:
+        if 0 < x < 8 and 0 < y < 8:
+            if board[x][y] is None or (board[x][y].type_ != figure.type_):
+                avialable_moves.append(Coordinates(x=x, y=y))
     return avialable_moves
 
 
 def check_king_avialable_moves(board, figure):
     '''
-    Функция возвращает возможные ходы в виде буквы Г(для коня)
+    Функция возвращает возможные ходы для короля
     '''
     avialable_moves = []
-        
-    return avialable_moves
+    avialable_moves.extend([(coord := Coordinates(figure.position.x + 1, y)) for y in [figure.position.y - 1, figure.position.y, figure.position.y + 1]])
+    avialable_moves.extend([(coord := Coordinates(figure.position.x, y)) for y in [figure.position.y - 1, figure.position.y, figure.position.y + 1]])
+    avialable_moves.extend([(coord := Coordinates(figure.position.x - 1, y)) for y in [figure.position.y - 1, figure.position.y, figure.position.y + 1]])
+
+    return [move for move in avialable_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((board[move.x][move.y] is None) or (board[move.x][move.y] is not None and board[move.x][move.y].type_ != figure.type_))]

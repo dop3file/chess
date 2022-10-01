@@ -23,7 +23,7 @@ class Game:
 			'queen_-1': pygame.image.load(os.path.join("static/queen.png")),
 			'queen_1': pygame.image.load(os.path.join("static/queen_black.png")),
 			'king_-1': pygame.image.load(os.path.join("static/king.png")),
-			'king_1': pygame.image.load(os.path.join("static/queen_black.png")),
+			'king_1': pygame.image.load(os.path.join("static/king_black.png")),
 		}
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
 
@@ -41,7 +41,6 @@ class Game:
 		select_piece = None
 
 		while True:
-			print(self.board.turn)
 			pygame.display.flip()
 			clock.tick(self.FPS)
 			# рисуем сетку

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from headers import Coordinates
-from utils import check_horizontal_line, check_horizontal_line, check_vertical_line, check_diagonal_line
+from utils import check_horizontal_line, check_horizontal_line, check_vertical_line, \
+                  check_diagonal_line, check_king_avialable_moves, check_knight_avialable_moves
 
 
 class Figure(ABC):
@@ -115,8 +116,7 @@ class Knight(Figure):
         super().move(position)
 
     def get_available_moves(self):
-        available_moves = []
-        
+        available_moves = check_knight_avialable_moves(self.board.board, self)
 
         return available_moves
 
@@ -176,15 +176,6 @@ class King(Figure):
         super().move(position)
 
     def get_available_moves(self):
-        available_moves = []
-
-        available_moves.extend(check_diagonal_line(self.board.board, self, True))
-        available_moves.extend(check_diagonal_line(self.board.board, self, False))
-        available_moves.extend(check_horizontal_line(self.board.board, self, True))
-        available_moves.extend(check_horizontal_line(self.board.board, self, False))
-        available_moves.extend(check_vertical_line(self.board.board, self, True))
-        available_moves.extend(check_vertical_line(self.board.board, self, False))
+        available_moves = check_king_avialable_moves(self.board.board, self)
 
         return available_moves
-            
-
