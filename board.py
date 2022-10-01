@@ -7,6 +7,7 @@ class Board:
         self.board = [[None for _ in range(board_width)] for _ in range(board_height)]
         self.turn = Turn.white.value
         self.dead_figures = []
+        self.count_turn = 0
 
     def set_defautl_board(self):
         self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(8))]
@@ -37,13 +38,8 @@ class Board:
         self.board[new_coordinate.x][new_coordinate.y] = self.board[figure_coordinate.x][figure_coordinate.y]
         self.board[figure_coordinate.x][figure_coordinate.y] = None
         self.change_turn()
+        self.count_turn += 1
 
     def change_turn(self):
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
 
-    def draw_board(self):
-        for el in self.board:
-            for zel in el:
-                text = '-' if zel is None else str(zel)[0]
-                print(f'{text} ', end='')
-            print('')

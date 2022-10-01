@@ -80,6 +80,7 @@ def check_knight_avialable_moves(board, figure):
         if 0 < x < 8 and 0 < y < 8:
             if board[x][y] is None or (board[x][y].type_ != figure.type_):
                 avialable_moves.append(Coordinates(x=x, y=y))
+                
     return avialable_moves
 
 

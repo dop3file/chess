@@ -1,5 +1,5 @@
 import os
-from headers import Coordinates
+from headers import Coordinates, Turn
 
 import pygame
 
@@ -7,9 +7,10 @@ import pygame
 class Game:
 	def __init__(self, board):
 		self.board = board
+		self.original_board = board
 		self.WIDTH, self.HEIGHT = 8, 8
 		self.TILE = 100
-		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE
+		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 75
 		self.FPS = 30
 		self.PIECE_IMAGES = {
 			'pawn_-1': pygame.image.load(os.path.join("static/pawn.png")),
@@ -29,20 +30,26 @@ class Game:
 
 	def draw_board(self):
 		pygame.init()
+		pygame.font.init()
 
 		white, black = (238,238,213), (125,148,93)
+		font = pygame.font.Font('static/arcadeclassic.regular.ttf', 64)
 
 		screen = pygame.display.set_mode(self.GAME_RES)
+		pygame.display.set_caption('Chess')
+		pygame.display.set_icon(pygame.image.load('static/knight_black.png'))
 
 		screen.fill(white)
 
 		clock = pygame.time.Clock()
 
 		select_piece = None
+		is_roll = False
 
 		while True:
 			pygame.display.flip()
 			clock.tick(self.FPS)
+
 			# рисуем сетку
 			for num in range(self.WIDTH ** 2):
 				surface = pygame.Surface((100, 100))
@@ -66,15 +73,46 @@ class Game:
 						piece = pygame.transform.scale(piece, (self.PIECE_WIDTH,self.PIECE_WIDTH))
 						piece.convert()
 						screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
+			
+			white_figures_count = 0
+			black_figures_count = 0
+			# рисуем "мертвые" фигуры
+			for figure in self.board.dead_figures:
+				piece = self.PIECE_IMAGES[f'{figure.name}_{figure.type_}']
+				piece = pygame.transform.scale(piece, (self.PIECE_WIDTH / 4, self.PIECE_HEIGHT / 4))
+				piece.convert()
+				if figure.type_ == Turn.white.value:
+					screen.blit(piece, (100 + (white_figures_count * 25), self.HEIGHT * self.TILE + 35))
+					white_figures_count += 1
+				else:
+					screen.blit(piece, (100 + (black_figures_count * 25), self.HEIGHT * self.TILE + 10))
+					black_figures_count += 1
+
+			# рисуем количество ходом
+			rect = pygame.Surface((200, 200))
+			rect.fill(white)
+			screen.blit(rect, (self.WIDTH * self.TILE - 100, self.HEIGHT * self.TILE))
+			turn_count_text = font.render(str(self.board.count_turn), True, (0,0,0))
+			screen.blit(turn_count_text, (self.WIDTH * self.TILE - 100, self.HEIGHT * self.TILE + 2))
+
+			# кнопка для переворота поля
+			roll_board_btn = pygame.image.load(os.path.join("static/reload.png"))
+			roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
+			roll_board_btn.convert()
+			screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
 
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					click_position = pygame.mouse.get_pos()
-					if select_piece and select_piece.type_ == self.board.turn:
-						select_piece.move(position=Coordinates(x=int(click_position[1] / 100), y=int(click_position[0] / 100)))
-						select_piece = None
-					if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
-						select_piece = piece
+					if click_position[1] > 800:
+						if click_position[0] in list(range(0,75)) and click_position[1] in list(range(750, 850)):
+							is_roll = True
+					else:
+						if select_piece and select_piece.type_ == self.board.turn:
+							select_piece.move(position=Coordinates(x=int(click_position[1] / 100), y=int(click_position[0] / 100)))
+							select_piece = None
+						if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
+							select_piece = piece
 						
 				if event.type == pygame.QUIT:
 					exit()
