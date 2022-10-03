@@ -1,3 +1,4 @@
+from re import I
 from headers import Coordinates
 
 
@@ -77,7 +78,7 @@ def check_knight_avialable_moves(board, figure):
         [figure.position.x + 1, figure.position.y + 2]
     ]
     for x, y in avialable_coords:
-        if 0 < x < 8 and 0 < y < 8:
+        if 0 <= x < 8 and 0 <= y < 8:
             if board[x][y] is None or (board[x][y].type_ != figure.type_):
                 avialable_moves.append(Coordinates(x=x, y=y))
                 
@@ -94,3 +95,46 @@ def check_king_avialable_moves(board, figure):
     avialable_moves.extend([(coord := Coordinates(figure.position.x - 1, y)) for y in [figure.position.y - 1, figure.position.y, figure.position.y + 1]])
 
     return [move for move in avialable_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((board[move.x][move.y] is None) or (board[move.x][move.y] is not None and board[move.x][move.y].type_ != figure.type_))]
+
+
+def check_king_check(board, figure):
+    '''
+    Функция возвращает под шахом ли король
+    '''
+    figures = [figure_ for line in board for figure_ in line if figure_ and figure_.type_ != figure.type_]
+    for figure_ in figures:
+        if figure_.name == 'knight':
+            if Coordinates(x=figure.position.x, y=figure.position.y) in check_knight_avialable_moves(board, figure_):
+                return True
+        if figure_.name == 'bishop':
+            available_moves = [
+                check_diagonal_line(board, figure_, True), 
+                check_diagonal_line(board, figure_, False)
+            ]
+            for moves in available_moves:
+                if Coordinates(x=figure.position.x, y=figure.position.y) in moves:
+                    return True
+        if figure_.name == 'rook':
+            available_moves = [
+                check_vertical_line(board, figure_, True), 
+                check_vertical_line(board, figure_, False)
+            ]
+            for moves in available_moves:
+                if Coordinates(x=figure.position.x, y=figure.position.y) in moves:
+                    return True
+        if figure_.name == 'queen':
+            available_moves = [
+                check_diagonal_line(board, figure_, True), 
+                check_diagonal_line(board, figure_, False), 
+                check_vertical_line(board, figure_, False), 
+                check_vertical_line(board, figure_, True), 
+                check_horizontal_line(board, figure_, True), 
+                check_horizontal_line(board, figure_, False)
+            ]
+            for moves in available_moves:
+                if Coordinates(x=figure.position.x, y=figure.position.y) in moves:
+                    return True
+    
+    return False
+        
+            

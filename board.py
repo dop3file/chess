@@ -1,5 +1,7 @@
+import enum
 from headers import board_width, board_height, Coordinates, Turn
 from figure import Pawn, Rook, Knight, Bishop, Queen, King
+from utils import check_king_check
 
 
 class Board:
@@ -8,6 +10,7 @@ class Board:
         self.turn = Turn.white.value
         self.dead_figures = []
         self.count_turn = 0
+        self.is_check = False
 
     def set_defautl_board(self):
         self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(8))]
@@ -39,7 +42,27 @@ class Board:
         self.board[figure_coordinate.x][figure_coordinate.y] = None
         self.change_turn()
         self.count_turn += 1
+        if self.verify_check():
+            is_check = True
+            print('Шах')
+        
 
     def change_turn(self):
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
 
+    def verify_check(self):
+        king = [king for line in self.board for king in line if king and king.name == 'king' and king.type_ == self.turn][0]
+
+        return check_king_check(self.board, king)
+        
+        
+
+
+    def roll_board(self):
+        for line_index, line in enumerate(self.board):
+            for figure_index, figure in enumerate(line):
+                if figure is not None:
+                    if figure.type_ == Turn.white.value:
+                        self.board[line_index][figure_index].type_ = Turn.black.value
+                    else:
+                        self.board[line_index][figure_index].type_ = Turn.white.value

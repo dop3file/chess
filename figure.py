@@ -18,15 +18,19 @@ class Figure(ABC):
             self.board.drag_figure(self.position, position)
             self.position = position
 
+    def verify_check(self):
+        if self.board.is_check:
+            print(1)
+
     @abstractmethod
     def get_available_moves(self):
         pass
 
     def __repr__(self):
-        return f'{self.name} x={self.position.x} y={self.position.y} {"black" if self.type_ else "white"}'
+        return f'{self.name} x={self.position.x} y={self.position.y} {"black" if self.type_ == Turn.black.value else "white"}'
 
     def __str__(self):
-        return f'{self.name} {self.position}'
+        return f'{self.name} {self.position} {"black" if self.type_ == Turn.black.value else "white"}'
 
 
 class Pawn(Figure):
@@ -110,11 +114,7 @@ class Rook(Figure):
         )
         
     def move(self, position):
-        if position in self.get_available_moves():
-            if self.board.board[position.x][position.y] is not None:
-                self.board.dead_figures.append(self.board.board[position.x][position.y])
-            self.board.drag_figure(self.position, position)
-            self.position = position
+        super().move(position)
 
     def get_available_moves(self):
         available_moves = []
