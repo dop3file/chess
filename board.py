@@ -1,7 +1,7 @@
 import enum
 from headers import board_width, board_height, Coordinates, Turn
 from figure import Pawn, Rook, Knight, Bishop, Queen, King
-from utils import check_king_check
+from utils import check_diagonal_line, check_vertical_line, check_horizontal_line
 
 
 class Board:
@@ -37,32 +37,69 @@ class Board:
         self.board[0][4] = King(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
         self.board[7][4] = King(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
 
-    def drag_figure(self, figure_coordinate: Coordinates, new_coordinate: Coordinates):
-        self.board[new_coordinate.x][new_coordinate.y] = self.board[figure_coordinate.x][figure_coordinate.y]
-        self.board[figure_coordinate.x][figure_coordinate.y] = None
+    def drag_figure(self, figure, new_coordinate: Coordinates):
+        self.board[new_coordinate.x][new_coordinate.y] = self.board[figure.position.x][figure.position.y]
+        self.board[figure.position.x][figure.position.y] = None
+        figure.position = new_coordinate
         self.change_turn()
+        self.verify_check()
         self.count_turn += 1
-        if self.verify_check():
-            is_check = True
-            print('Шах')
         
-
     def change_turn(self):
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
 
     def verify_check(self):
-        king = [king for line in self.board for king in line if king and king.name == 'king' and king.type_ == self.turn][0]
+        def check_positions(self):
+            kings = [figure for line in self.board for figure in line if figure and figure.name == 'king']
+            for king in kings:
+                figures = [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ != king.type_]
+                for figure_ in figures:
+                    if figure_.name == 'knight':
+                        if Coordinates(x=king.position.x, y=king.position.y) in figure_.get_available_moves():
+                            return True
+                    if figure_.name == 'bishop':
+                        available_moves = [
+                            check_diagonal_line(self.board, figure_, True), 
+                            check_diagonal_line(self.board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if Coordinates(x=king.position.x, y=king.position.y) in moves:
+                                return True
+                    if figure_.name == 'rook':
+                        available_moves = [
+                            check_horizontal_line(self.board, figure_, True), 
+                            check_horizontal_line(self.board, figure_, False),
+                            check_vertical_line(self.board, figure_, True), 
+                            check_vertical_line(self.board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if Coordinates(x=king.position.x, y=king.position.y) in moves:
+                                return True
+                    if figure_.name == 'queen':
+                        available_moves = [
+                            check_diagonal_line(self.board, figure_, True), 
+                            check_diagonal_line(self.board, figure_, False), 
+                            check_vertical_line(self.board, figure_, False), 
+                            check_vertical_line(self.board, figure_, True), 
+                            check_horizontal_line(self.board, figure_, True), 
+                            check_horizontal_line(self.board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if Coordinates(x=king.position.x, y=king.position.y) in moves:
+                                return True
+                    if figure_.name == 'pawn':
+                        if Coordinates(x=king.position.x, y=king.position.y) in figure_.get_available_moves() and figure_.position.y != king.position.y:
+                            return True
+            return False
+        self.is_check = check_positions(self)
 
-        return check_king_check(self.board, king)
+
+    def get_available_moves_without_stalemate(self):
+        pass
         
-        
-
-
-    def roll_board(self):
-        for line_index, line in enumerate(self.board):
-            for figure_index, figure in enumerate(line):
-                if figure is not None:
-                    if figure.type_ == Turn.white.value:
-                        self.board[line_index][figure_index].type_ = Turn.black.value
-                    else:
-                        self.board[line_index][figure_index].type_ = Turn.white.value
+    def draw_board(self):
+        for el in self.board:
+            for zel in el:
+                text = '-' if zel is None else str(zel)[0]
+                print(f'{text} ', end='')
+            print('')

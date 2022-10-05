@@ -11,7 +11,7 @@ class Game:
 		self.original_board = board
 		self.WIDTH, self.HEIGHT = 8, 8
 		self.TILE = 100
-		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 75
+		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 125
 		self.FPS = 30
 		self.PIECE_IMAGES = {
 			'pawn_-1': pygame.image.load(os.path.join("static/pawn.png")),
@@ -75,8 +75,8 @@ class Game:
 						piece.convert()
 						screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
 
-			white_figures_count = 0
-			black_figures_count = 0
+			white_figures_count, black_figures_count = 0, 0
+
 			# рисуем "мертвые" фигуры
 			for figure in self.board.dead_figures:
 				piece = self.PIECE_IMAGES[f'{figure.name}_{figure.type_}']
@@ -90,11 +90,12 @@ class Game:
 					black_figures_count += 1
 
 			# рисуем текст количества ходов
-			rect = pygame.Surface((200, 200))
+			position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE)
+			rect = pygame.Surface((300, 200))
 			rect.fill(white)
-			screen.blit(rect, (self.WIDTH * self.TILE - 135, self.HEIGHT * self.TILE))
-			turn_count_text = font.render(str(self.board.count_turn), True, (0,0,0))
-			screen.blit(turn_count_text, (self.WIDTH * self.TILE - 135, self.HEIGHT * self.TILE + 2))
+			screen.blit(rect, position)
+			turn_count_text = font.render(f'Turn  {self.board.count_turn}', True, (0,0,0))
+			screen.blit(turn_count_text, position)
 
 			# кнопка для переворота поля
 			roll_board_btn = pygame.image.load(os.path.join("static/reload.png"))
@@ -102,6 +103,14 @@ class Game:
 			roll_board_btn.convert()
 			screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
 
+			# шах, шах и мат
+			position = (self.WIDTH * self.TILE - 790, self.HEIGHT * self.TILE + 65)
+			rect = pygame.Surface((200, 100))
+			rect.fill(white)
+			screen.blit(rect, position)
+			if self.board.is_check:
+				is_check_text = font.render("Check", True, (0,0,0))
+				screen.blit(is_check_text, position)
 
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN:
@@ -116,7 +125,6 @@ class Game:
 						if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 							select_piece = piece
 							
-						
 				if event.type == pygame.QUIT:
 					exit()
 				

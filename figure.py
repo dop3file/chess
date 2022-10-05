@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from headers import Coordinates, Turn, figures_ranks
-from utils import check_horizontal_line, check_horizontal_line, check_vertical_line, \
-                  check_diagonal_line, check_king_avialable_moves, check_knight_avialable_moves
+from utils import check_horizontal_line, check_vertical_line, check_diagonal_line
+                  
 
 
 class Figure(ABC):
@@ -15,8 +15,7 @@ class Figure(ABC):
         if position in self.get_available_moves():
             if self.board.board[position.x][position.y] is not None:
                 self.board.dead_figures.append(self.board.board[position.x][position.y])
-            self.board.drag_figure(self.position, position)
-            self.position = position
+            self.board.drag_figure(self, position)
 
     def verify_check(self):
         if self.board.is_check:
@@ -47,8 +46,7 @@ class Pawn(Figure):
             if position.y != self.position.y:
                 self.kill_figure(position)
             else:
-                self.board.drag_figure(self.position, position)
-                self.position = position
+                self.board.drag_figure(self, position)
 
             if (self.type_ == Turn.white.value and self.position.x == 0) or (self.type_ == Turn.black.value and self.position.x == 7):
                 self.upgrade_figure()
@@ -101,7 +99,7 @@ class Pawn(Figure):
     def kill_figure(self, position: Coordinates):
         if self.board.board[position.x][position.y].type_ != self.type_:
             self.board.dead_figures.append(self.board.board[position.x][position.y])
-            self.board.drag_figure(self.position, position)
+            self.board.drag_figure(self, position)
             self.position = Coordinates(x=position.x, y=position.y)
 
 
@@ -138,8 +136,25 @@ class Knight(Figure):
         super().move(position)
 
     def get_available_moves(self):
-        available_moves = check_knight_avialable_moves(self.board.board, self)
-
+        '''
+        Функция возвращает возможные ходы в виде буквы Г(для коня)
+        '''
+        available_moves = []
+        available_coords = [
+            [self.position.x - 2, self.position.y - 1],
+            [self.position.x - 2, self.position.y + 1],
+            [self.position.x + 2, self.position.y + 1],
+            [self.position.x + 2, self.position.y - 1],
+            [self.position.x - 1, self.position.y - 2],
+            [self.position.x - 1, self.position.y - 2],
+            [self.position.x + 1, self.position.y - 2],
+            [self.position.x - 1, self.position.y + 2],
+            [self.position.x + 1, self.position.y + 2]
+        ]
+        for x, y in available_coords:
+            if 0 <= x < 8 and 0 <= y < 8 and (self.board.board[x][y] is None or (self.board.board[x][y].type_ != self.type_)):
+                available_moves.append(Coordinates(x=x, y=y))
+                
         return available_moves
 
 
@@ -198,6 +213,9 @@ class King(Figure):
         super().move(position)
 
     def get_available_moves(self):
-        available_moves = check_king_avialable_moves(self.board.board, self)
+        available_moves = []
+        available_moves.extend([(coord := Coordinates(self.position.x + 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
+        available_moves.extend([(coord := Coordinates(self.position.x, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
+        available_moves.extend([(coord := Coordinates(self.position.x - 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
 
-        return available_moves
+        return [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] is not None and self.board.board[move.x][move.y].type_ != self.type_))]
