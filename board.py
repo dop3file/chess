@@ -31,11 +31,11 @@ class Board:
         self.board[7][2] = Bishop(position=Coordinates(x=7, y=2), board=self, type_=Turn.white.value)
         self.board[7][5] = Bishop(position=Coordinates(x=7, y=5), board=self, type_=Turn.white.value)
 
-        self.board[0][3] = Queen(position=Coordinates(x=0, y=3), board=self, type_=Turn.black.value)
-        self.board[7][3] = Queen(position=Coordinates(x=7, y=3), board=self, type_=Turn.white.value)
+        self.board[0][4] = Queen(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
+        self.board[7][4] = Queen(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
 
-        self.board[0][4] = King(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
-        self.board[7][4] = King(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
+        self.board[0][3] = King(position=Coordinates(x=0, y=3), board=self, type_=Turn.black.value)
+        self.board[7][3] = King(position=Coordinates(x=7, y=3), board=self, type_=Turn.white.value)
 
     def drag_figure(self, figure, new_coordinate: Coordinates):
         self.board[new_coordinate.x][new_coordinate.y] = self.board[figure.position.x][figure.position.y]
@@ -79,8 +79,8 @@ class Board:
                         available_moves = [
                             check_diagonal_line(self.board, figure_, True), 
                             check_diagonal_line(self.board, figure_, False), 
-                            check_vertical_line(self.board, figure_, False), 
                             check_vertical_line(self.board, figure_, True), 
+                            check_vertical_line(self.board, figure_, False), 
                             check_horizontal_line(self.board, figure_, True), 
                             check_horizontal_line(self.board, figure_, False)
                         ]
@@ -103,3 +103,12 @@ class Board:
                 text = '-' if zel is None else str(zel)[0]
                 print(f'{text} ', end='')
             print('')
+
+    def roll_board(self):
+        ...
+        # self.board = self.board[::-1]
+        # for line_index, line in enumerate(self.board):
+        #     for cell_index, cell in enumerate(line):
+        #         if cell:
+        #             cell.postion = Coordinates(x=line_index, y=cell_index)
+        #             cell.type_ = Turn.white.value if cell.type_ == Turn.black.value else Turn.black.value

@@ -66,6 +66,10 @@ class Game:
 						surface.fill(white)
 				screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
 
+			if is_roll:
+				self.board.roll_board()
+				is_roll = False
+
 			# рисуем фигуры
 			for x, line in enumerate(self.board.board):
 				for y, cell in enumerate(line):
@@ -124,6 +128,8 @@ class Game:
 							select_piece = None
 						if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 							select_piece = piece
+							print(select_piece)
+							print(select_piece.get_available_moves())
 							
 				if event.type == pygame.QUIT:
 					exit()
