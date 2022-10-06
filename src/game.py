@@ -10,22 +10,23 @@ class Game:
 		self.board = board
 		self.original_board = board
 		self.WIDTH, self.HEIGHT = 8, 8
+		self.BASE_IMAGE_DIR = "../static"
 		self.TILE = 100
 		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 125
 		self.FPS = 30
 		self.PIECE_IMAGES = {
-			'pawn_-1': pygame.image.load(os.path.join("static/pawn.png")),
-			'pawn_1': pygame.image.load(os.path.join("static/pawn_black.png")),
-			'rook_-1': pygame.image.load(os.path.join("static/rock.png")),
-			'rook_1': pygame.image.load(os.path.join("static/rock_black.png")),
-			'knight_-1': pygame.image.load(os.path.join("static/knight.png")),
-			'knight_1': pygame.image.load(os.path.join("static/knight_black.png")),
-			'bishop_1': pygame.image.load(os.path.join("static/bishop_black.png")),
-			'bishop_-1': pygame.image.load(os.path.join("static/bishop.png")),
-			'queen_-1': pygame.image.load(os.path.join("static/queen.png")),
-			'queen_1': pygame.image.load(os.path.join("static/queen_black.png")),
-			'king_-1': pygame.image.load(os.path.join("static/king.png")),
-			'king_1': pygame.image.load(os.path.join("static/king_black.png")),
+			'pawn_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn.png")),
+			'pawn_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn_black.png")),
+			'rook_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/rock.png")),
+			'rook_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/rock_black.png")),
+			'knight_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/knight.png")),
+			'knight_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/knight_black.png")),
+			'bishop_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/bishop_black.png")),
+			'bishop_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/bishop.png")),
+			'queen_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/queen.png")),
+			'queen_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/queen_black.png")),
+			'king_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king.png")),
+			'king_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king_black.png")),
 		}
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
 
@@ -34,11 +35,11 @@ class Game:
 		pygame.font.init()
 
 		white, black = (238,238,213), (125,148,93)
-		font = pygame.font.Font('static/arcadeclassic.regular.ttf', 58)
+		font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
 
 		screen = pygame.display.set_mode(self.GAME_RES)
 		pygame.display.set_caption('Chess')
-		pygame.display.set_icon(pygame.image.load('static/knight_black.png'))
+		pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
 
 		screen.fill(white)
 
@@ -102,7 +103,7 @@ class Game:
 			screen.blit(turn_count_text, position)
 
 			# кнопка для переворота поля
-			roll_board_btn = pygame.image.load(os.path.join("static/reload.png"))
+			roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_IMAGE_DIR}/reload.png'))
 			roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
 			roll_board_btn.convert()
 			screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
