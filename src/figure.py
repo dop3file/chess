@@ -11,11 +11,16 @@ class Figure(ABC):
         self.board = board
         self.type_ = type_
 
-    def move(self, position: Coordinates):
+    def move(self, position: Coordinates, is_check_call=False):
         if position in self.get_available_moves():
             if self.board.board[position.x][position.y] is not None:
                 self.board.dead_figures.append(self.board.board[position.x][position.y])
-            self.board.drag_figure(self, position)
+            if is_check_call:
+                self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
+                self.board.board[self.position.x][self.position.y] = None
+                self.position = position
+            else:
+                self.board.drag_figure(self, position)
 
     def verify_check(self):
         if self.board.is_check:
@@ -41,12 +46,17 @@ class Pawn(Figure):
         )
         self.default_position = position
 
-    def move(self, position):
+    def move(self, position, is_check_call=False):
         if position in self.get_available_moves():
             if position.y != self.position.y:
                 self.kill_figure(position)
             else:
-                self.board.drag_figure(self, position)
+                if is_check_call:
+                    self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
+                    self.board.board[self.position.x][self.position.y] = None
+                    self.position = position
+                else:
+                    self.board.drag_figure(self, position)
 
             if (self.type_ == Turn.white.value and self.position.x == 0) or (self.type_ == Turn.black.value and self.position.x == 7):
                 self.upgrade_figure()
@@ -96,11 +106,15 @@ class Pawn(Figure):
 
         return available_moves
 
-    def kill_figure(self, position: Coordinates):
+    def kill_figure(self, position: Coordinates, is_check_call=False):
         if self.board.board[position.x][position.y].type_ != self.type_:
             self.board.dead_figures.append(self.board.board[position.x][position.y])
-            self.board.drag_figure(self, position)
-            self.position = Coordinates(x=position.x, y=position.y)
+            if is_check_call:
+                self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
+                self.board.board[self.position.x][self.position.y] = None
+            else:
+                self.board.drag_figure(self, position)
+            self.position = position
 
 
 class Rook(Figure):
@@ -111,8 +125,8 @@ class Rook(Figure):
             type_=type_
         )
         
-    def move(self, position):
-        super().move(position)
+    def move(self, position, is_check_call=False):
+        super().move(position, is_check_call)
 
     def get_available_moves(self):
         available_moves = []
@@ -132,8 +146,8 @@ class Knight(Figure):
             type_=type_
         )
         
-    def move(self, position):
-        super().move(position)
+    def move(self, position, is_check_call=False):
+        super().move(position, is_check_call)
 
     def get_available_moves(self):
         '''
@@ -166,8 +180,8 @@ class Bishop(Figure):
             type_=type_
         )
         
-    def move(self, position):
-        super().move(position)
+    def move(self, position, is_check_call=False):
+        super().move(position, is_check_call)
 
     def get_available_moves(self):
         available_moves = []
@@ -185,8 +199,8 @@ class Queen(Figure):
             type_=type_
         )
         
-    def move(self, position):
-        super().move(position)
+    def move(self, position, is_check_call=False):
+        super().move(position, is_check_call)
 
     def get_available_moves(self):
         available_moves = []
@@ -209,8 +223,8 @@ class King(Figure):
             type_=type_
         )
         
-    def move(self, position):
-        super().move(position)
+    def move(self, position, is_check_call=False):
+        super().move(position, is_check_call)
 
     def get_available_moves(self):
         available_moves = []

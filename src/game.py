@@ -129,8 +129,6 @@ class Game:
 							select_piece = None
 						if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 							select_piece = piece
-							print(select_piece)
-							print(select_piece.get_available_moves())
 							
 				if event.type == pygame.QUIT:
 					exit()
