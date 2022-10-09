@@ -12,19 +12,16 @@ class Figure(ABC):
         self.type_ = type_
 
     def move(self, position: Coordinates, is_check_call=False):
-        if position in self.get_available_moves():
-            if self.board.board[position.x][position.y] is not None:
+        if position in self.get_available_moves() or is_check_call:
+            if self.board.board[position.x][position.y] is not None and not is_check_call:
                 self.board.dead_figures.append(self.board.board[position.x][position.y])
+                
             if is_check_call:
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
                 self.position = position
             else:
                 self.board.drag_figure(self, position)
-
-    def verify_check(self):
-        if self.board.is_check:
-            print(1)
 
     @abstractmethod
     def get_available_moves(self):
@@ -47,9 +44,9 @@ class Pawn(Figure):
         self.default_position = position
 
     def move(self, position, is_check_call=False):
-        if position in self.get_available_moves():
+        if position in self.get_available_moves() or is_check_call:
             if position.y != self.position.y:
-                self.kill_figure(position)
+                self.kill_figure(position, is_check_call)
             else:
                 if is_check_call:
                     self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
@@ -107,12 +104,12 @@ class Pawn(Figure):
         return available_moves
 
     def kill_figure(self, position: Coordinates, is_check_call=False):
-        if self.board.board[position.x][position.y].type_ != self.type_:
-            self.board.dead_figures.append(self.board.board[position.x][position.y])
+        if (piece := self.board.board[position.x][position.y]) and piece.type_ != self.type_:
             if is_check_call:
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
             else:
+                self.board.dead_figures.append(self.board.board[position.x][position.y])
                 self.board.drag_figure(self, position)
             self.position = position
 

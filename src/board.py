@@ -10,8 +10,8 @@ class Board:
         self.turn = Turn.white.value
         self.dead_figures = []
         self.count_turn = 0
-        self.is_check = False
         self.check_turn = None
+        self.is_check_mate = None
 
     def set_defautl_board(self):
         self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(8))]
@@ -32,23 +32,26 @@ class Board:
         self.board[7][2] = Bishop(position=Coordinates(x=7, y=2), board=self, type_=Turn.white.value)
         self.board[7][5] = Bishop(position=Coordinates(x=7, y=5), board=self, type_=Turn.white.value)
 
-        self.board[0][4] = Queen(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
-        self.board[7][4] = Queen(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
+        self.board[0][3] = Queen(position=Coordinates(x=0, y=3), board=self, type_=Turn.black.value)
+        self.board[7][3] = Queen(position=Coordinates(x=7, y=3), board=self, type_=Turn.white.value)
 
-        self.board[0][3] = King(position=Coordinates(x=0, y=3), board=self, type_=Turn.black.value)
-        self.board[7][3] = King(position=Coordinates(x=7, y=3), board=self, type_=Turn.white.value)
+        self.board[0][4] = King(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
+        self.board[7][4] = King(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
 
     def drag_figure(self, figure, new_coordinate: Coordinates):
-        print(self.is_check, self.check_turn)
-        if self.is_check and self.turn == self.check_turn:
-            print(self.get_available_moves_without_stalemate())
+        if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
+            return
+
         self.board[new_coordinate.x][new_coordinate.y] = self.board[figure.position.x][figure.position.y]
         self.board[figure.position.x][figure.position.y] = None
         figure.position = new_coordinate
         self.change_turn()
-        self.is_check = self.verify_check(self.board)
-        self.check_turn = self.turn
+        self.check_turn = self.turn if self.verify_check(self.board) else None
         self.count_turn += 1
+
+        if not self.get_available_moves_without_stalemate():
+            print("Мат")
+            self.is_check_mate = True
         
     def change_turn(self):
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
@@ -96,22 +99,25 @@ class Board:
                         return True
         return False
         
-
     def get_available_moves_without_stalemate(self):
-        old_board = copy.deepcopy(self.board)
+        new_board = Board()
+        new_board.board = self.board
         available_moves = []
 
         for figure in [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn]:
             for move_coord in figure.get_available_moves():
+                old_position = figure.position
+                old_cell = self.board[move_coord.x][move_coord.y]
                 figure.move(move_coord, is_check_call=True)
                 if not self.verify_check(self.board):
-                    available_moves.append((figure, move_coord))
-        self.board = old_board
+                    available_moves.append(move_coord)
+                figure.move(old_position, is_check_call=True)
+                self.board[move_coord.x][move_coord.y] = old_cell
+                self.board[old_position.x][old_position.y] = figure
+                figure.position = old_position
 
+        print(available_moves)
         return available_moves
-        
-
-        
         
     def draw_board(self):
         for el in self.board:

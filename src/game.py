@@ -113,12 +113,12 @@ class Game:
 			rect = pygame.Surface((200, 100))
 			rect.fill(white)
 			screen.blit(rect, position)
-			if self.board.is_check:
-				is_check_text = font.render("Check", True, (0,0,0))
+			if self.board.check_turn or self.board.is_check_mate:
+				is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
 				screen.blit(is_check_text, position)
 
 			for event in pygame.event.get():
-				if event.type == pygame.MOUSEBUTTONDOWN:
+				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
 					click_position = pygame.mouse.get_pos()
 					if click_position[1] > 800:
 						if click_position[0] in list(range(0,75)) and click_position[1] in list(range(750, 850)):
