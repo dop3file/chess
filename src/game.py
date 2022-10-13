@@ -67,12 +67,8 @@ class Game:
 						surface.fill(white)
 				screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
 
-			if is_roll:
-				self.board.roll_board()
-				is_roll = False
-
 			# рисуем фигуры
-			for x, line in enumerate(self.board.board):
+			for x, line in enumerate(self.board.board[::-1] if is_roll else self.board.board):
 				for y, cell in enumerate(line):
 					if cell:
 						piece = self.PIECE_IMAGES[f'{cell.name}_{cell.type_}']
@@ -120,10 +116,14 @@ class Game:
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
 					click_position = pygame.mouse.get_pos()
+					
 					if click_position[1] > 800:
 						if click_position[0] in list(range(0,75)) and click_position[1] in list(range(750, 850)):
-							is_roll = True
+							is_roll = False if is_roll else True
 					else:
+						if is_roll:
+							click_position = (click_position[0], (click_position[1] + click_position[1] + 125) - 925)
+
 						if select_piece and select_piece.type_ == self.board.turn:
 							select_piece.move(position=Coordinates(x=int(click_position[1] / 100) , y=int(click_position[0] / 100)))
 							select_piece = None
@@ -132,5 +132,3 @@ class Game:
 							
 				if event.type == pygame.QUIT:
 					exit()
-				
-

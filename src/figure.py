@@ -228,5 +228,9 @@ class King(Figure):
         available_moves.extend([(coord := Coordinates(self.position.x + 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x - 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
+        
 
-        return [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] is not None and self.board.board[move.x][move.y].type_ != self.type_))]
+        available_moves = [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] is not None and self.board.board[move.x][move.y].type_ != self.type_))]
+        
+        return available_moves
+            

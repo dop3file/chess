@@ -9,6 +9,5 @@ def main():
     game = Game(board)
     game.draw_board()
 
-
 if __name__ == '__main__':
     main()
