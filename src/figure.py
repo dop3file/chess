@@ -105,9 +105,10 @@ class Pawn(Figure):
             if is_check_call:
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
+                self.position = position
             else:
                 self.board.drag_figure(self, position)
-            self.position = position
+            
 
 
 class Rook(Figure):
