@@ -121,14 +121,16 @@ class Game:
 						if click_position[0] in list(range(0,75)) and click_position[1] in list(range(750, 850)):
 							is_roll = False if is_roll else True
 					else:
-						if is_roll:
-							click_position = (click_position[0], (click_position[1] + click_position[1] + 125) - 925)
-
-						if select_piece and select_piece.type_ == self.board.turn:
-							select_piece.move(position=Coordinates(x=int(click_position[1] / 100) , y=int(click_position[0] / 100)))
-							select_piece = None
-						if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
-							select_piece = piece
+						try:
+							if is_roll:
+								click_position = (click_position[0], -click_position[1] - 100)
+							if select_piece and select_piece.type_ == self.board.turn:
+								select_piece.move(position=Coordinates(x=int(click_position[1] / 100) if not is_roll else int(click_position[1] / 100) + 8, y=int(click_position[0] / 100)))
+								select_piece = None
+							if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
+								select_piece = piece
+						except IndexError:
+							pass
 							
 				if event.type == pygame.QUIT:
 					exit()

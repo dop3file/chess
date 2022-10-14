@@ -42,24 +42,32 @@ class Board:
         if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
             return
 
+        if (piece := self.board[new_coordinate.x][new_coordinate.y]) and piece.name == 'king':
+            return
+
         old_position = figure.position
         old_cell = self.board[new_coordinate.x][new_coordinate.y]
-
+        
         self.board[new_coordinate.x][new_coordinate.y] = self.board[figure.position.x][figure.position.y]
         self.board[figure.position.x][figure.position.y] = None
         figure.position = new_coordinate
-        if self.verify_check(self.board):
+
+        if self.verify_check(self.board) and self.turn == self.verify_check(self.board).type_:
             self.board[old_position.x][old_position.y] = figure
             self.board[new_coordinate.x][new_coordinate.y] = old_cell
+            if old_cell is not None:
+                old_cell.position = new_coordinate
             figure.position = old_position
             
         else:
+            if old_cell is not None:
+                self.dead_figures.append(old_cell)
             figure.position = new_coordinate
             self.change_turn()
 
             self.check_turn = self.turn if self.verify_check(self.board) else None
             self.count_turn += 1
-        
+
         if not self.get_available_moves_without_stalemate():
             self.is_check_mate = True
         
@@ -69,12 +77,11 @@ class Board:
     def verify_check(self, board):
         kings = [figure for line in board for figure in line if figure and figure.name == 'king']
         for king in kings:
-            print(king.position)
             figures = [figure_ for line in board for figure_ in line if figure_ and figure_.type_ != king.type_]
             for figure_ in figures:
                 if figure_.name == 'knight':
                     if king.position in figure_.get_available_moves():
-                        return True
+                        return king
                 if figure_.name == 'bishop':
                     available_moves = [
                         check_diagonal_line(board, figure_, True), 
@@ -82,7 +89,7 @@ class Board:
                     ]
                     for moves in available_moves:
                         if king.position in moves:
-                            return True
+                            return king
                 if figure_.name == 'rook':
                     available_moves = [
                         check_horizontal_line(board, figure_, True), 
@@ -92,7 +99,7 @@ class Board:
                     ]
                     for moves in available_moves:
                         if king.position in moves:
-                            return True
+                            return king
                 if figure_.name == 'queen':
                     available_moves = [
                         check_diagonal_line(board, figure_, True), 
@@ -104,15 +111,16 @@ class Board:
                     ]
                     for moves in available_moves:
                         if king.position in moves:
-                            return True
+                            return king
 
                 if figure_.name == 'pawn':
                     if king.position in figure_.get_available_moves() and figure_.position.y != king.position.y:
-                        return True
+                        return king
 
                 if figure_.name == 'king':
-                    if king.position in figure_.get_available_moves():
-                        return True
+                    for moves in figure_.get_available_moves():
+                        if king.position in moves:
+                            return king
         return False
         
     def get_available_moves_without_stalemate(self):
@@ -133,19 +141,3 @@ class Board:
                 figure.position = old_position
                 
         return available_moves
-        
-    def draw_board(self):
-        for el in self.board:
-            for zel in el:
-                text = '-' if zel is None else str(zel)[0]
-                print(f'{text} ', end='')
-            print('')
-
-    def roll_board(self):
-        ...
-        # self.board = self.board[::-1]
-        # for line_index, line in enumerate(self.board):
-        #     for cell_index, cell in enumerate(line):
-        #         if cell:
-        #             cell.postion = Coordinates(x=line_index, y=cell_index)
-        #             cell.type_ = Turn.white.value if cell.type_ == Turn.black.value else Turn.black.value

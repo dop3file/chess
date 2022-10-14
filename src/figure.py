@@ -12,10 +12,7 @@ class Figure(ABC):
         self.type_ = type_
 
     def move(self, position: Coordinates, is_check_call=False):
-        if position in self.get_available_moves() or is_check_call:
-            if self.board.board[position.x][position.y] is not None and not is_check_call:
-                self.board.dead_figures.append(self.board.board[position.x][position.y])
-                
+        if position in self.get_available_moves() or is_check_call:                
             if is_check_call:
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
@@ -109,7 +106,6 @@ class Pawn(Figure):
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
             else:
-                self.board.dead_figures.append(self.board.board[position.x][position.y])
                 self.board.drag_figure(self, position)
             self.position = position
 
@@ -229,8 +225,6 @@ class King(Figure):
         available_moves.extend([(coord := Coordinates(self.position.x, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x - 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         
-
-        available_moves = [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] is not None and self.board.board[move.x][move.y].type_ != self.type_))]
+        available_moves = [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] and self.board.board[move.x][move.y].type_ != self.type_))]
         
         return available_moves
-            
