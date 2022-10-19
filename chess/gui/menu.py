@@ -3,7 +3,7 @@ import pygame
 
 from gui.elements import Button
 from gui.game import Game
-from bots.bot import Bot
+from bots.bot import EasyBot
 
 
 class Menu:
@@ -60,9 +60,9 @@ class Menu:
         screen.fill(white)
 
         gui_elements = []
-        gui_elements.append(Button(250, 150, 300, 75, 'Easy', Bot.start_game_with_bot, screen))
-        gui_elements.append(Button(250, 250, 300, 75, 'Medium', Bot.start_game_with_bot, screen))
-        gui_elements.append(Button(250, 350, 300, 75, 'Hard', Bot.start_game_with_bot, screen))
+        gui_elements.append(Button(250, 150, 300, 75, 'Easy', EasyBot.init_bot, screen))
+        gui_elements.append(Button(250, 250, 300, 75, 'Medium', EasyBot.init_bot, screen))
+        gui_elements.append(Button(250, 350, 300, 75, 'Hard', EasyBot.init_bot, screen))
 
         while True:
             for gui_el in gui_elements:

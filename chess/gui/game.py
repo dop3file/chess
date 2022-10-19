@@ -32,9 +32,10 @@ class Game:
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
 
 	@staticmethod
-	def init_game():
-		board = Board()
-		board.set_defautl_board()
+	def init_game(board=None):
+		if not board:
+			board = Board()
+			board.set_defautl_board()
 		game = Game(board)
 		game.start_game()
 
