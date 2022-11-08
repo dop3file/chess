@@ -124,9 +124,9 @@ class Rook(Figure):
 
     def castling(self, king_position):
         if king_position.y > self.position.y:
-            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y + 2))
+            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y + 2 if abs(self.position.y - king_position.y) == 3 else self.position.y + 3))
         else:
-            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2))
+            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) == 3 else self.position.y - 3))
 
     def get_available_moves(self):
         available_moves = []
@@ -260,12 +260,10 @@ class King(Figure):
                     if rook.x == self.position.x:
                         is_castling = True
                         for cell in range(self.position.y + (1 if rook.y == 7 else -1), rook.y, -1 if rook.y == 0 else 1):
-                            print(self.board.board[self.position.x][cell])
                             if self.board.board[self.position.x][cell] is not None:
                                 is_castling = False
                                 break
                         if is_castling:
-                            print('castling')
                             available_moves.append(rook)
         #print(available_moves)
 
