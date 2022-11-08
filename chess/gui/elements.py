@@ -33,12 +33,11 @@ class Button(GUIElement):
             'pressed': '#333333',
         }
 
-    def process(self):
+    def process(self, mouse_pos):
         self.button_surface.fill(self.background_colors['normal'])
-        mousePos = pygame.mouse.get_pos()
-        if self.button_rect.collidepoint(mousePos):
+        if self.button_rect.collidepoint(pygame.mouse.get_pos()):
             self.button_surface.fill(self.background_colors['hover'])
-            if pygame.mouse.get_pressed(num_buttons=3)[0]:
+            if pygame.mouse.get_pressed()[0]:
                 self.button_surface.fill(self.background_colors['pressed'])
                 self.on_click_func()
 

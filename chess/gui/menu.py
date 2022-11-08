@@ -1,5 +1,6 @@
 import config
 import pygame
+import pyautogui
 
 from gui.elements import Button
 from gui.game import Game
@@ -22,7 +23,7 @@ class Menu:
         clock = pygame.time.Clock()
 
         pygame.mixer.music.load(f'{self.BASE_IMAGE_DIR}/track.mp3')
-        pygame.mixer.music.play()
+        pygame.mixer.music.play(-1)
 
         white = (238,238,213)
 
@@ -34,7 +35,7 @@ class Menu:
 
         while True:
             for gui_el in gui_elements:
-                gui_el.process()
+                gui_el.process(pygame.mouse.get_pos())
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -46,7 +47,6 @@ class Menu:
             screen.fill(white)
 
     def start_bot_menu(self):
-        print(1)
         pygame.init()
         pygame.font.init()
         
@@ -60,13 +60,14 @@ class Menu:
         screen.fill(white)
 
         gui_elements = []
-        gui_elements.append(Button(250, 150, 300, 75, 'Easy', EasyBot.init_bot, screen))
-        gui_elements.append(Button(250, 250, 300, 75, 'Medium', EasyBot.init_bot, screen))
-        gui_elements.append(Button(250, 350, 300, 75, 'Hard', EasyBot.init_bot, screen))
+        gui_elements.append(Button(250, 100, 300, 75, 'Easy', EasyBot.init_bot, screen))
+        gui_elements.append(Button(250, 200, 300, 75, 'Medium', EasyBot.init_bot, screen))
+        gui_elements.append(Button(250, 300, 300, 75, 'Hard', EasyBot.init_bot, screen))
+
 
         while True:
-            for gui_el in gui_elements:
-                gui_el.process()
+            for gui_element in gui_elements:
+                gui_element.process(pygame.mouse.get_pos())
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -76,7 +77,6 @@ class Menu:
             clock.tick(self.FPS)
             
             screen.fill(white)
-
     
             
 

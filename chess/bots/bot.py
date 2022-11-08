@@ -13,7 +13,7 @@ class Bot(ABC):
         ...
     
     @abstractmethod
-    def get_figure_with_random_move(self):
+    def move(self):
         ...
 
     def start_game(self):
@@ -30,7 +30,7 @@ class BotBoard(Board):
     def drag_figure(self, figure, new_coordinate: Coordinates):
         super().drag_figure(figure, new_coordinate)
         if self.count_turn % 2 != 0:
-            (move := self.bot.get_figure_with_random_move(self)).figure.move(move.move)
+            self.bot.move(self)
 
 class EasyBot(Bot):
     @staticmethod
@@ -46,6 +46,20 @@ class EasyBot(Bot):
     def init_bot():
         bot = EasyBot()
         bot.start_game()
+
+    @staticmethod
+    def move(board):
+        (move := EasyBot.get_figure_with_random_move(board)).figure.move(move.move)
+
+class MediumBot(Bot):
+    @staticmethod
+    def init_bot():
+        bot = MediumBot()
+        bot.start_game()
+
+    @staticmethod
+    def move():
+        ...
 
 
 BOT_TURN = Turn.black.value

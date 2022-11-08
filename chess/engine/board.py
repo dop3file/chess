@@ -38,7 +38,7 @@ class Board:
         self.board[0][4] = King(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
         self.board[7][4] = King(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
 
-    def drag_figure(self, figure, new_coordinate: Coordinates):
+    def drag_figure(self, figure, new_coordinate: Coordinates, is_castling=False):
         if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
             return
 
