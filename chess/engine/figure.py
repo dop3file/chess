@@ -124,9 +124,9 @@ class Rook(Figure):
 
     def castling(self, king_position):
         if king_position.y > self.position.y:
-            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y + 2 if abs(self.position.y - king_position.y) == 3 else self.position.y + 3))
+            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y + 2 if king_position.y == 4 and self.position.y == 7 else self.position.y + 3))
         else:
-            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) == 3 else self.position.y - 3))
+            self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) != 4 else self.position.y - 3))
 
     def get_available_moves(self):
         available_moves = []
