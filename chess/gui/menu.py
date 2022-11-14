@@ -32,6 +32,7 @@ class Menu:
         gui_elements = []
         gui_elements.append(Button(250, 150, 300, 75, 'Play', Game.init_game, screen))
         gui_elements.append(Button(250, 250, 300, 75, 'Bot', self.start_bot_menu, screen))
+        gui_elements.append(Button(250, 350, 300, 75, 'Online', Game.init_game, screen))
 
         while True:
             for gui_el in gui_elements:

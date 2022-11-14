@@ -38,11 +38,16 @@ class Board:
         self.board[0][4] = King(position=Coordinates(x=0, y=4), board=self, type_=Turn.black.value)
         self.board[7][4] = King(position=Coordinates(x=7, y=4), board=self, type_=Turn.white.value)
 
+    def is_king_cell(self, coordinates: Coordinates) -> bool:
+        if (cell := self.board[coordinates.x][coordinates.y]) and cell.name == 'king':
+            return True
+        return False
+
     def drag_figure(self, figure, new_coordinate: Coordinates, is_castling=False):
         if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
             return
 
-        if (piece := self.board[new_coordinate.x][new_coordinate.y]) and piece.name == 'king':
+        if self.is_king_cell(new_coordinate):
             return
 
         old_position = figure.position

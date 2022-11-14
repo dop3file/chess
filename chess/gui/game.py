@@ -43,7 +43,7 @@ class Game:
 		pygame.init()
 		pygame.font.init()
 
-		white, black = (238,238,213), (125,148,93)
+		white, black, green, orange = (238,238,213), (125,148,93), (124,252,0), (255,127,80)
 		font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
 
 		screen = pygame.display.set_mode(self.GAME_RES)
@@ -57,6 +57,8 @@ class Game:
 		select_piece = None
 		is_roll = False
 
+		available_moves_highlight = []
+
 		while True:
 			pygame.display.flip()
 			clock.tick(self.FPS)
@@ -64,17 +66,25 @@ class Game:
 			# рисуем сетку
 			for num in range(self.WIDTH ** 2):
 				surface = pygame.Surface((100, 100))
+				color = None
 				if int(num / 8) % 2 == 0:
 					if num % 2 == 0:
-						surface.fill(white)
+						color = white
 					else:
-						surface.fill(black)
+						color = black
 				else:
 					if num % 2 == 0:
-						surface.fill(black)
+						color = black
 					else:
-						surface.fill(white)
+						color = white
+				surface.fill(color)
 				screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
+
+			for move_hightlight in available_moves_highlight:
+				surface = pygame.Surface((100, 100))
+				surface.set_alpha(84)
+				surface.fill(orange)
+				screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
 
 			# рисуем фигуры
 			for x, line in enumerate(self.board.board[::-1] if is_roll else self.board.board):
@@ -121,7 +131,7 @@ class Game:
 			if self.board.check_turn or self.board.is_check_mate:
 				is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
 				screen.blit(is_check_text, position)
-
+				
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
 					click_position = pygame.mouse.get_pos()
@@ -136,8 +146,12 @@ class Game:
 							if select_piece and select_piece.type_ == self.board.turn:
 								select_piece.move(position=Coordinates(x=int(click_position[1] / 100) if not is_roll else int(click_position[1] / 100) + 8, y=int(click_position[0] / 100)))
 								select_piece = None
+								available_moves_highlight = []
 							if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
 								select_piece = piece
+								available_moves_highlight = []
+								for move in select_piece.get_available_moves():
+									available_moves_highlight.append(move)
 						except IndexError:
 							pass
 							

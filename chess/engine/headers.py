@@ -1,8 +1,10 @@
-from collections import namedtuple
+from typing import NamedTuple
 from enum import Enum
 
 
-Coordinates = namedtuple("coordinates", ["x", "y"])
+class Coordinates(NamedTuple):
+    x: int
+    y: int
 
 board_width = 8
 board_height = 8
