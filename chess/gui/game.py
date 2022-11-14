@@ -39,6 +39,38 @@ class Game:
 		game = Game(board)
 		game.start_game()
 
+	def draw_roll_board_button(self, screen):
+		roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_IMAGE_DIR}/reload.png'))
+		roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
+		roll_board_btn.convert()
+		screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
+
+	def draw_timer_text(self, screen, color, start_time_ticks, font):
+		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE + 50)
+		rect = pygame.Surface((300, 200))
+		rect.fill(color)
+		screen.blit(rect, position)
+		count_seconds = str((round((pygame.time.get_ticks() - start_time_ticks) / 10000, 2))).replace('.', ' ')
+		turn_count_text = font.render(count_seconds, True, (0,0,0))
+		screen.blit(turn_count_text, position)
+
+	def draw_check_mate_info(self, screen, color, font):
+		position = (self.WIDTH * self.TILE - 790, self.HEIGHT * self.TILE + 65)
+		rect = pygame.Surface((200, 100))
+		rect.fill(color)
+		screen.blit(rect, position)
+		if self.board.check_turn or self.board.is_check_mate:
+			is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
+			screen.blit(is_check_text, position)
+	
+	def draw_count_turns_text(self, screen, color, font):
+		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE)
+		rect = pygame.Surface((300, 200))
+		rect.fill(color)
+		screen.blit(rect, position)
+		turn_count_text = font.render(f'Turn  {self.board.count_turn}', True, (0,0,0))
+		screen.blit(turn_count_text, position)
+
 	def start_game(self):
 		pygame.init()
 		pygame.font.init()
@@ -58,6 +90,7 @@ class Game:
 		is_roll = False
 
 		available_moves_highlight = []
+		start_ticks = pygame.time.get_ticks()
 
 		while True:
 			pygame.display.flip()
@@ -109,28 +142,10 @@ class Game:
 					screen.blit(piece, (100 + (black_figures_count * 25), self.HEIGHT * self.TILE + 10))
 					black_figures_count += 1
 
-			# рисуем текст количества ходов
-			position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE)
-			rect = pygame.Surface((300, 200))
-			rect.fill(white)
-			screen.blit(rect, position)
-			turn_count_text = font.render(f'Turn  {self.board.count_turn}', True, (0,0,0))
-			screen.blit(turn_count_text, position)
-
-			# кнопка для переворота поля
-			roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_IMAGE_DIR}/reload.png'))
-			roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
-			roll_board_btn.convert()
-			screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
-
-			# шах, шах и мат
-			position = (self.WIDTH * self.TILE - 790, self.HEIGHT * self.TILE + 65)
-			rect = pygame.Surface((200, 100))
-			rect.fill(white)
-			screen.blit(rect, position)
-			if self.board.check_turn or self.board.is_check_mate:
-				is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
-				screen.blit(is_check_text, position)
+			self.draw_count_turns_text(screen, color, font)
+			self.draw_timer_text(screen, white, start_ticks, font)
+			self.draw_roll_board_button(screen)
+			self.draw_check_mate_info(screen, color, font)
 				
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
