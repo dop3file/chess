@@ -1,19 +1,28 @@
 import socket
+import asyncio
 
-serv_sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, proto=0)
-serv_sock.bind(('', 53210))
-serv_sock.listen(2)
 
-while True:
-    client_sock, client_addr = serv_sock.accept()
-    print('Connected by', client_addr)
+async def handle_client(client):
+    loop = asyncio.get_event_loop()
+    request = None
+    await loop.sock_sendall(client, 'Start'.encode('utf8'))
+    while request != 'quit':
+        request = (await loop.sock_recv(client, 255)).decode('utf8')
+        response = str(request)
+        await loop.sock_sendall(client, response.encode('utf8'))
+    client.close()
+
+async def run_server():
+    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.bind(('localhost', 15555))
+    server.listen(8)
+    server.setblocking(False)
+
+    loop = asyncio.get_event_loop()
 
     while True:
-        data = client_sock.recv(1024)
-        if not data:
-            break
-        else:
-            print(f'Message: {data.decode("utf-8")}')
-        client_sock.sendall(data)
+        client, _ = await loop.sock_accept(server)
+        loop.create_task(handle_client(client))
 
-    client_sock.close()
+asyncio.run(run_server())
+

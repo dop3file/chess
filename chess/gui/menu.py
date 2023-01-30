@@ -5,6 +5,7 @@ import pyautogui
 from gui.elements import Button
 from gui.game import Game
 from bots.bot import EasyBot
+from server.client import init_client
 
 
 class Menu:
@@ -32,7 +33,7 @@ class Menu:
         gui_elements = []
         gui_elements.append(Button(250, 150, 300, 75, 'Play', Game.init_game, screen))
         gui_elements.append(Button(250, 250, 300, 75, 'Bot', self.start_bot_menu, screen))
-        gui_elements.append(Button(250, 350, 300, 75, 'Online', Game.init_game, screen))
+        gui_elements.append(Button(250, 350, 300, 75, 'Online', init_client, screen))
 
         while True:
             for gui_el in gui_elements:

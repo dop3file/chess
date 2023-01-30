@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import math
-from engine.headers import Coordinates, Turn, figures_ranks
+from engine.headers import Coordinates, Turn
 from engine.utils import check_horizontal_line, check_vertical_line, check_diagonal_line
                   
 

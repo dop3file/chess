@@ -2,6 +2,7 @@ import copy
 from engine.headers import board_width, board_height, Coordinates, Turn
 from engine.figure import Pawn, Rook, Knight, Bishop, Queen, King
 from engine.utils import check_diagonal_line, check_vertical_line, check_horizontal_line
+from engine.figure import Figure
 
 
 class Board:
@@ -146,3 +147,14 @@ class Board:
                 figure.position = old_position
                 
         return available_moves
+
+    def get_figure_name(self, name: str) -> Figure:
+        figures = {
+            'pawn': Pawn,
+            'rook': Rook,
+            'king': King,
+            'queen': Queen,
+            'knight': Knight,
+            'bishop': Bishop
+        }
+        return figures[name]

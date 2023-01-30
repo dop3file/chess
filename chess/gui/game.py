@@ -9,12 +9,13 @@ import config
 class Game:
 	def __init__(self, board):
 		self.board = board
-		self.original_board = board
+
 		self.WIDTH, self.HEIGHT = 8, 8
 		self.BASE_IMAGE_DIR = config.BASE_IMAGE_DIR
 		self.TILE = 100
 		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 125
-		self.FPS = 30
+		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
+		self.FPS = 60
 		self.PIECE_IMAGES = {
 			'pawn_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn.png")),
 			'pawn_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn_black.png")),
@@ -29,60 +30,74 @@ class Game:
 			'king_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king.png")),
 			'king_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king_black.png")),
 		}
-		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
+		self.HIGHLIGHT_OPACITY = 75
+
+		pygame.init()
+		pygame.font.init()
+		self.screen = pygame.display.set_mode(self.GAME_RES)
+
+		self.colors = {
+			'white': (238,238,213),
+			'black': (125,148,93),
+			'green': (124,252,0),
+			'orange': (255,127,80),
+		}
+
+		self.font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
+		self.timer_font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/Ubuntu-LightItalic.ttf', 24)
+
+		pygame.display.set_caption('Chess')
+		pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
 
 	@staticmethod
 	def init_game(board=None):
-		if not board:
+		if board is None:
 			board = Board()
 			board.set_defautl_board()
 		game = Game(board)
 		game.start_game()
 
-	def draw_roll_board_button(self, screen):
+	def draw_roll_board_button(self):
 		roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_IMAGE_DIR}/reload.png'))
 		roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
 		roll_board_btn.convert()
-		screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
+		self.screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
 
-	def draw_timer_text(self, screen, color, start_time_ticks, font):
+	def draw_timer_text(self, color, start_time_ticks, font):
 		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE + 50)
 		rect = pygame.Surface((300, 200))
 		rect.fill(color)
-		screen.blit(rect, position)
-		count_seconds = str((round((pygame.time.get_ticks() - start_time_ticks) / 10000, 2))).replace('.', ' ')
-		turn_count_text = font.render(count_seconds, True, (0,0,0))
-		screen.blit(turn_count_text, position)
+		self.screen.blit(rect, position)
+		count_seconds = start_time_ticks / 1000 % 60
+		count_minutes = int(start_time_ticks / 60000 % 24)
+		turn_count_text = font.render(f'{count_minutes}:{count_seconds}', True, (0,0,0))
+		self.screen.blit(turn_count_text, position)
 
-	def draw_check_mate_info(self, screen, color, font):
+	def draw_check_mate_info(self, color, font):
 		position = (self.WIDTH * self.TILE - 790, self.HEIGHT * self.TILE + 65)
 		rect = pygame.Surface((200, 100))
 		rect.fill(color)
-		screen.blit(rect, position)
+		self.screen.blit(rect, position)
 		if self.board.check_turn or self.board.is_check_mate:
 			is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
-			screen.blit(is_check_text, position)
+			self.screen.blit(is_check_text, position)
 	
-	def draw_count_turns_text(self, screen, color, font):
+	def draw_count_turns_text(self, color, font):
 		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE)
 		rect = pygame.Surface((300, 200))
 		rect.fill(color)
-		screen.blit(rect, position)
+		self.screen.blit(rect, position)
 		turn_count_text = font.render(f'Turn  {self.board.count_turn}', True, (0,0,0))
-		screen.blit(turn_count_text, position)
+		self.screen.blit(turn_count_text, position)
+
+	def draw_highlights_moves(self, move_hightlight):
+		surface = pygame.Surface((100, 100))
+		surface.set_alpha(self.HIGHLIGHT_OPACITY)
+		surface.fill(self.colors['orange'])
+		self.screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
 
 	def start_game(self):
-		pygame.init()
-		pygame.font.init()
-
-		white, black, green, orange = (238,238,213), (125,148,93), (124,252,0), (255,127,80)
-		font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
-
-		screen = pygame.display.set_mode(self.GAME_RES)
-		pygame.display.set_caption('Chess')
-		pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
-
-		screen.fill(white)
+		self.screen.fill(self.colors['white'])
 
 		clock = pygame.time.Clock()
 
@@ -90,7 +105,6 @@ class Game:
 		is_roll = False
 
 		available_moves_highlight = []
-		start_ticks = pygame.time.get_ticks()
 
 		while True:
 			pygame.display.flip()
@@ -102,22 +116,20 @@ class Game:
 				color = None
 				if int(num / 8) % 2 == 0:
 					if num % 2 == 0:
-						color = white
+						color = self.colors['white']
 					else:
-						color = black
+						color = self.colors['black']
 				else:
 					if num % 2 == 0:
-						color = black
+						color = self.colors['black']
 					else:
-						color = white
+						color = self.colors['white']
 				surface.fill(color)
-				screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
+				self.screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
 
+			# рисуем подсветку возможных ходов
 			for move_hightlight in available_moves_highlight:
-				surface = pygame.Surface((100, 100))
-				surface.set_alpha(84)
-				surface.fill(orange)
-				screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
+				self.draw_highlights_moves(move_hightlight)
 
 			# рисуем фигуры
 			for x, line in enumerate(self.board.board[::-1] if is_roll else self.board.board):
@@ -126,7 +138,7 @@ class Game:
 						piece = self.PIECE_IMAGES[f'{cell.name}_{cell.type_}']
 						piece = pygame.transform.scale(piece, (self.PIECE_WIDTH,self.PIECE_WIDTH))
 						piece.convert()
-						screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
+						self.screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
 
 			white_figures_count, black_figures_count = 0, 0
 
@@ -136,16 +148,16 @@ class Game:
 				piece = pygame.transform.scale(piece, (self.PIECE_WIDTH / 4, self.PIECE_HEIGHT / 4))
 				piece.convert()
 				if figure.type_ == Turn.white.value:
-					screen.blit(piece, (100 + (white_figures_count * 25), self.HEIGHT * self.TILE + 35))
+					self.screen.blit(piece, (100 + (white_figures_count * 25), self.HEIGHT * self.TILE + 35))
 					white_figures_count += 1
 				else:
-					screen.blit(piece, (100 + (black_figures_count * 25), self.HEIGHT * self.TILE + 10))
+					self.screen.blit(piece, (100 + (black_figures_count * 25), self.HEIGHT * self.TILE + 10))
 					black_figures_count += 1
 
-			self.draw_count_turns_text(screen, color, font)
-			self.draw_timer_text(screen, white, start_ticks, font)
-			self.draw_roll_board_button(screen)
-			self.draw_check_mate_info(screen, color, font)
+			self.draw_count_turns_text(color, self.font)
+			self.draw_timer_text(self.colors['white'], pygame.time.get_ticks(), self.timer_font)
+			self.draw_roll_board_button()
+			self.draw_check_mate_info(color, self.font)
 				
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
