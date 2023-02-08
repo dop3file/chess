@@ -3,6 +3,7 @@ import pygame
 
 from engine.board import Board
 from engine.headers import Coordinates, Turn
+from engine.figure import Figure
 import config
 
 
@@ -31,6 +32,8 @@ class Game:
 			'king_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king_black.png")),
 		}
 		self.HIGHLIGHT_OPACITY = 75
+		
+		self.INFO_PANEL_POS_X = 800
 
 		pygame.init()
 		pygame.font.init()
@@ -42,6 +45,11 @@ class Game:
 			'green': (124,252,0),
 			'orange': (255,127,80),
 		}
+
+		self.count_dead_black_figures, self.count_dead_white_figures = (1, 1)
+		self.available_moves_highlight = []
+		self.select_piece = None
+		self.is_roll = False
 
 		self.font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
 		self.timer_font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/Ubuntu-LightItalic.ttf', 24)
@@ -90,28 +98,39 @@ class Game:
 		turn_count_text = font.render(f'Turn  {self.board.count_turn}', True, (0,0,0))
 		self.screen.blit(turn_count_text, position)
 
-	def draw_highlights_moves(self, move_hightlight):
-		surface = pygame.Surface((100, 100))
-		surface.set_alpha(self.HIGHLIGHT_OPACITY)
-		surface.fill(self.colors['orange'])
-		self.screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
+	def draw_highlights_moves(self):
+		for move_hightlight in self.available_moves_highlight:
+			surface = pygame.Surface((100, 100))
+			surface.set_alpha(self.HIGHLIGHT_OPACITY)
+			surface.fill(self.colors['orange'])
+			self.screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
 
-	def start_game(self):
-		self.screen.fill(self.colors['white'])
+	def draw_dead_figures(self):
+		for figure in self.board.dead_figures:
+			piece = self.PIECE_IMAGES[f'{figure.name}_{figure.type_}']
+			piece = pygame.transform.scale(piece, (self.PIECE_WIDTH / 4, self.PIECE_HEIGHT / 4))
+			piece.convert()
+			if figure.type_ == Turn.white.value:
+				self.screen.blit(piece, (self.TILE + (self.count_dead_white_figures * 25), self.HEIGHT * self.TILE + 35))
+				self.count_dead_white_figures += 1
+			else:
+				self.screen.blit(piece, (self.TILE + (self.count_dead_black_figures * 25), self.HEIGHT * self.TILE + 10))
+				self.count_dead_black_figures += 1
+		
+	def draw_figure(self, figure, x: int , y: int):
+		piece = self.PIECE_IMAGES[f'{figure.name}_{figure.type_}']
+		piece = pygame.transform.scale(piece, (self.PIECE_WIDTH,self.PIECE_WIDTH))
+		piece.convert()
+		self.screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
 
-		clock = pygame.time.Clock()
+	def draw_figures(self):
+		for x, line in enumerate(self.board.board[::-1] if self.is_roll else self.board.board):
+				for y, cell in enumerate(line):
+					if cell:
+						self.draw_figure(cell, x, y)
 
-		select_piece = None
-		is_roll = False
-
-		available_moves_highlight = []
-
-		while True:
-			pygame.display.flip()
-			clock.tick(self.FPS)
-
-			# рисуем сетку
-			for num in range(self.WIDTH ** 2):
+	def draw_board(self):
+		for num in range(self.WIDTH ** 2):
 				surface = pygame.Surface((100, 100))
 				color = None
 				if int(num / 8) % 2 == 0:
@@ -127,58 +146,48 @@ class Game:
 				surface.fill(color)
 				self.screen.blit(surface, (num * self.TILE if num < 8 else (num - int(num / 8) * 8) * self.TILE, int(num / 8) * self.TILE))
 
-			# рисуем подсветку возможных ходов
-			for move_hightlight in available_moves_highlight:
-				self.draw_highlights_moves(move_hightlight)
+	def start_game(self):
+		self.screen.fill(self.colors['white'])
 
-			# рисуем фигуры
-			for x, line in enumerate(self.board.board[::-1] if is_roll else self.board.board):
-				for y, cell in enumerate(line):
-					if cell:
-						piece = self.PIECE_IMAGES[f'{cell.name}_{cell.type_}']
-						piece = pygame.transform.scale(piece, (self.PIECE_WIDTH,self.PIECE_WIDTH))
-						piece.convert()
-						self.screen.blit(piece, (y * self.TILE + 5, x * self.TILE + 5))
+		clock = pygame.time.Clock()
 
-			white_figures_count, black_figures_count = 0, 0
+		while True:
+			pygame.display.flip()
+			clock.tick(self.FPS)
 
-			# рисуем "мертвые" фигуры
-			for figure in self.board.dead_figures:
-				piece = self.PIECE_IMAGES[f'{figure.name}_{figure.type_}']
-				piece = pygame.transform.scale(piece, (self.PIECE_WIDTH / 4, self.PIECE_HEIGHT / 4))
-				piece.convert()
-				if figure.type_ == Turn.white.value:
-					self.screen.blit(piece, (100 + (white_figures_count * 25), self.HEIGHT * self.TILE + 35))
-					white_figures_count += 1
-				else:
-					self.screen.blit(piece, (100 + (black_figures_count * 25), self.HEIGHT * self.TILE + 10))
-					black_figures_count += 1
+			self.draw_board()
+			self.draw_highlights_moves()
 
-			self.draw_count_turns_text(color, self.font)
+			self.draw_figures()
+
+			self.count_dead_black_figures, self.count_dead_white_figures = (1, 1)
+			self.draw_dead_figures()
+
+			self.draw_count_turns_text(self.colors['white'], self.font)
 			self.draw_timer_text(self.colors['white'], pygame.time.get_ticks(), self.timer_font)
 			self.draw_roll_board_button()
-			self.draw_check_mate_info(color, self.font)
+			self.draw_check_mate_info(self.colors['white'], self.font)
 				
 			for event in pygame.event.get():
 				if event.type == pygame.MOUSEBUTTONDOWN and not self.board.is_check_mate:
 					click_position = pygame.mouse.get_pos()
 					
-					if click_position[1] > 800:
-						if click_position[0] in list(range(0,75)) and click_position[1] in list(range(750, 850)):
-							is_roll = False if is_roll else True
+					if click_position[1] > self.INFO_PANEL_POS_X:
+						if  0 <= click_position[0] <= 75 and 750 <= click_position[1] <= 850:
+							self.is_roll = False if self.is_roll else True
 					else:
 						try:
-							if is_roll:
-								click_position = (click_position[0], -click_position[1] - 100)
-							if select_piece and select_piece.type_ == self.board.turn:
-								select_piece.move(position=Coordinates(x=int(click_position[1] / 100) if not is_roll else int(click_position[1] / 100) + 8, y=int(click_position[0] / 100)))
-								select_piece = None
-								available_moves_highlight = []
-							if (piece := self.board.board[int(click_position[1] / 100)][int(click_position[0] / 100)]) is not None and select_piece is None and piece.type_ == self.board.turn:
-								select_piece = piece
-								available_moves_highlight = []
-								for move in select_piece.get_available_moves():
-									available_moves_highlight.append(move)
+							if self.is_roll:
+								click_position = (click_position[0], -click_position[1] - self.TILE)
+							if self.select_piece and self.select_piece.type_ == self.board.turn:
+								self.select_piece.move(position=Coordinates(x=int(click_position[1] / self.TILE) if not self.is_roll else int(click_position[1] / self.TIlE) + self.HEIGHT, y=int(click_position[0] / self.TILE)))
+								self.select_piece = None
+								self.available_moves_highlight = []
+							if (piece := self.board.board[int(click_position[1] / self.TILE)][int(click_position[0] / self.TILE)]) is not None and self.select_piece is None and piece.type_ == self.board.turn:
+								self.select_piece = piece
+								self.available_moves_highlight = []
+								for move in self.select_piece.get_available_moves():
+									self.available_moves_highlight.append(move)
 						except IndexError:
 							pass
 							
