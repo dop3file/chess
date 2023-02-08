@@ -4,6 +4,7 @@ import pygame
 from engine.board import Board
 from engine.headers import Coordinates, Turn
 from engine.figure import Figure
+from gui.elements import MoveHighlight
 import config
 
 
@@ -47,7 +48,7 @@ class Game:
 		}
 
 		self.count_dead_black_figures, self.count_dead_white_figures = (1, 1)
-		self.available_moves_highlight = []
+		self.available_moves_highlight: list[MoveHighlight] = []
 		self.select_piece = None
 		self.is_roll = False
 
@@ -103,7 +104,11 @@ class Game:
 			surface = pygame.Surface((100, 100))
 			surface.set_alpha(self.HIGHLIGHT_OPACITY)
 			surface.fill(self.colors['orange'])
-			self.screen.blit(surface, (move_hightlight.y * self.TILE, move_hightlight.x * self.TILE))
+			if self.is_roll:
+				bias_factor = -200 if move_hightlight.figure.type_ == Turn.white.value else 200
+				self.screen.blit(surface, (move_hightlight.position.y * self.TILE, move_hightlight.position.x * self.TILE + bias_factor))
+			else:
+				self.screen.blit(surface, (move_hightlight.position.y * self.TILE, move_hightlight.position.x * self.TILE))
 
 	def draw_dead_figures(self):
 		for figure in self.board.dead_figures:
@@ -157,7 +162,6 @@ class Game:
 
 			self.draw_board()
 			self.draw_highlights_moves()
-
 			self.draw_figures()
 
 			self.count_dead_black_figures, self.count_dead_white_figures = (1, 1)
@@ -180,14 +184,15 @@ class Game:
 							if self.is_roll:
 								click_position = (click_position[0], -click_position[1] - self.TILE)
 							if self.select_piece and self.select_piece.type_ == self.board.turn:
-								self.select_piece.move(position=Coordinates(x=int(click_position[1] / self.TILE) if not self.is_roll else int(click_position[1] / self.TIlE) + self.HEIGHT, y=int(click_position[0] / self.TILE)))
+								self.select_piece.move(position=Coordinates(x=int(click_position[1] / self.TILE) if not self.is_roll else int(click_position[1] / self.TILE) + self.HEIGHT, y=int(click_position[0] / self.TILE)))
 								self.select_piece = None
 								self.available_moves_highlight = []
 							if (piece := self.board.board[int(click_position[1] / self.TILE)][int(click_position[0] / self.TILE)]) is not None and self.select_piece is None and piece.type_ == self.board.turn:
 								self.select_piece = piece
 								self.available_moves_highlight = []
 								for move in self.select_piece.get_available_moves():
-									self.available_moves_highlight.append(move)
+									move_highlight = MoveHighlight(position=move, figure=piece)
+									self.available_moves_highlight.append(move_highlight)
 						except IndexError:
 							pass
 							
