@@ -7,8 +7,10 @@ class Coordinates(NamedTuple):
     y: int
 
 
-board_width = 8
-board_height = 8
+class Move:
+    def __init__(self, position: Coordinates, figure):
+        self.position = position
+        self.figure = figure
 
 
 class Turn(Enum):
@@ -16,10 +18,10 @@ class Turn(Enum):
     black = 1
 
 
-figures_ranks = {
+figure_ranks = {
     'pawn': 1,
-    'knight': 3,
-    'bishop': 4,
-    'rook': 5,
-    'queen': 6
+    'knight': 2,
+    'bishop': 3,
+    'rook': 4,
+    'queen': 5
 }

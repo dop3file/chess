@@ -2,9 +2,8 @@ import os
 import pygame
 
 from engine.board import Board
-from engine.headers import Coordinates, Turn
+from engine.headers import Coordinates, Turn, Move
 from engine.figure import Figure
-from gui.elements import MoveHighlight
 import config
 
 
@@ -12,12 +11,12 @@ class Game:
 	def __init__(self, board):
 		self.board = board
 
-		self.WIDTH, self.HEIGHT = 8, 8
+		self.WIDTH, self.HEIGHT = config.BOARD_WIDTH, config.BOARD_HEIGHT
 		self.BASE_IMAGE_DIR = config.BASE_IMAGE_DIR
 		self.TILE = 100
 		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 125
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
-		self.FPS = 60
+		self.FPS = config.FPS
 		self.PIECE_IMAGES = {
 			'pawn_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn.png")),
 			'pawn_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn_black.png")),
@@ -48,7 +47,7 @@ class Game:
 		}
 
 		self.count_dead_black_figures = self.count_dead_white_figures = 1
-		self.available_moves_highlight: list[MoveHighlight] = []
+		self.available_moves_highlight: list[Move] = []
 		self.select_piece = None
 		self.is_roll = False
 
@@ -72,17 +71,17 @@ class Game:
 		roll_board_btn.convert()
 		self.screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
 
-	def draw_timer_text(self, color: tuple[int], start_time_ticks: int, font: pygame.font.Font) -> None:
+	def draw_timer_text(self, color: tuple[int, int, int], start_time_ticks: int, font: pygame.font.Font) -> None:
 		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE + 50)
 		rect = pygame.Surface((300, 200))
 		rect.fill(color)
 		self.screen.blit(rect, position)
 		count_seconds = round(start_time_ticks / 1000 % 60, 2)
 		count_minutes = int(start_time_ticks / 60000 % 24)
-		turn_count_text = font.render(f'0{count_minutes}:{count_seconds}', True, (0,0,0))
+		turn_count_text = font.render(f'{"0" if count_minutes < 10 else ""}{count_minutes}:{count_seconds}', True, (0,0,0))
 		self.screen.blit(turn_count_text, position)
 
-	def draw_check_mate_info(self, color: tuple[int], font: pygame.font.Font) -> None:
+	def draw_check_mate_info(self, color: tuple[int, int, int], font: pygame.font.Font) -> None:
 		position = (self.WIDTH * self.TILE - 790, self.HEIGHT * self.TILE + 65)
 		rect = pygame.Surface((200, 100))
 		rect.fill(color)
@@ -91,7 +90,7 @@ class Game:
 			is_check_text = font.render("Check" if self.board.check_turn and not self.board.is_check_mate else "Check Mate", True, (0,0,0))
 			self.screen.blit(is_check_text, position)
 	
-	def draw_count_turns_text(self, color: tuple[int], font: pygame.font.Font) -> None:
+	def draw_count_turns_text(self, color: tuple[int, int, int], font: pygame.font.Font) -> None:
 		position = (self.WIDTH * self.TILE - 270, self.HEIGHT * self.TILE)
 		rect = pygame.Surface((300, 200))
 		rect.fill(color)
@@ -158,7 +157,7 @@ class Game:
 		return None
 
 	def is_click_on_board(self, click_position: tuple[int, int]) -> bool:
-		return True if click_position[0] <= self.WIDTH * self.TILE and click_position[1] <= self.HEIGHT * self.TILE else False
+		return True if abs(click_position[1]) <= self.WIDTH * self.TILE and abs(click_position[0]) <= self.HEIGHT * self.TILE else False
 
 	def is_valid_piece(self, click_position: tuple[int, int]) -> Figure | None:
 		piece = self.board.board[int(click_position[1] / self.TILE)][int(click_position[0] / self.TILE)]
@@ -204,7 +203,7 @@ class Game:
 							self.select_piece = piece
 							self.available_moves_highlight = []
 							for move in self.select_piece.get_available_moves():
-								move_highlight = MoveHighlight(position=move, figure=piece)
+								move_highlight = Move(position=move, figure=piece)
 								self.available_moves_highlight.append(move_highlight)
 
 							

@@ -1,13 +1,14 @@
-import copy
-from engine.headers import board_width, board_height, Coordinates, Turn
+from engine.headers import Coordinates, Turn
 from engine.figure import Pawn, Rook, Knight, Bishop, Queen, King
 from engine.utils import check_diagonal_line, check_vertical_line, check_horizontal_line
 from engine.figure import Figure
 
+import config
+
 
 class Board:
     def __init__(self):
-        self.board = [[None for _ in range(board_width)] for _ in range(board_height)]
+        self.board = [[None for _ in range(config.BOARD_WIDTH)] for _ in range(config.BOARD_HEIGHT)]
         self.turn = Turn.white.value
         self.dead_figures = []
         self.count_turn = 0
@@ -15,8 +16,8 @@ class Board:
         self.is_check_mate = False
 
     def set_defautl_board(self):
-        self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(8))]
-        self.board[1][:] = [Pawn(position=Coordinates(x=1, y=y_coordinate), board=self, type_=Turn.black.value) for y_coordinate in list(range(8))]
+        self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(config.BOARD_WIDTH))]
+        self.board[1][:] = [Pawn(position=Coordinates(x=1, y=y_coordinate), board=self, type_=Turn.black.value) for y_coordinate in list(range(config.BOARD_WIDTH))]
         
         self.board[0][0] = Rook(position=Coordinates(x=0,y=0), board=self, type_=Turn.black.value)
         self.board[0][7] = Rook(position=Coordinates(x=0,y=7), board=self, type_=Turn.black.value)
@@ -44,11 +45,17 @@ class Board:
             return True
         return False
 
-    def drag_figure(self, figure, new_coordinate: Coordinates, is_castling=False):
+    def verify_move_availability(self, figure: Figure, new_coordinate: Coordinates):
         if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
-            return
+            return False
 
         if self.is_king_cell(new_coordinate):
+            return False
+
+        return True
+
+    def drag_figure(self, figure: Figure, new_coordinate: Coordinates, is_castling=False):
+        if not self.verify_move_availability(figure, new_coordinate):
             return
 
         old_position = figure.position
@@ -68,7 +75,6 @@ class Board:
         else:
             if old_cell is not None:
                 self.dead_figures.append(old_cell)
-            figure.position = new_coordinate
             self.change_turn()
 
             self.check_turn = self.turn if self.verify_check(self.board) else None
@@ -80,54 +86,57 @@ class Board:
     def change_turn(self):
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
 
-    def verify_check(self, board):
+    def verify_check(self, board) -> Figure | None:
+        '''
+        Метод возвращает короля под шахом если такой имеется
+        '''
         kings = [figure for line in board for figure in line if figure and figure.name == 'king']
         for king in kings:
             figures = [figure_ for line in board for figure_ in line if figure_ and figure_.type_ != king.type_]
             for figure_ in figures:
-                if figure_.name == 'knight':
-                    if king.position in figure_.get_available_moves():
-                        return king
-                if figure_.name == 'bishop':
-                    available_moves = [
-                        check_diagonal_line(board, figure_, True), 
-                        check_diagonal_line(board, figure_, False)
-                    ]
-                    for moves in available_moves:
-                        if king.position in moves:
+                match figure_.name:
+                    case 'knight':
+                        if king.position in figure_.get_available_moves():
                             return king
-                if figure_.name == 'rook':
-                    available_moves = [
-                        check_horizontal_line(board, figure_, True), 
-                        check_horizontal_line(board, figure_, False),
-                        check_vertical_line(board, figure_, True), 
-                        check_vertical_line(board, figure_, False)
-                    ]
-                    for moves in available_moves:
-                        if king.position in moves:
-                            return king
-                if figure_.name == 'queen':
-                    available_moves = [
-                        check_diagonal_line(board, figure_, True), 
-                        check_diagonal_line(board, figure_, False), 
-                        check_vertical_line(board, figure_, True), 
-                        check_vertical_line(board, figure_, False), 
-                        check_horizontal_line(board, figure_, True), 
-                        check_horizontal_line(board, figure_, False)
-                    ]
-                    for moves in available_moves:
-                        if king.position in moves:
+                    case 'bishop':
+                        available_moves = [
+                            check_diagonal_line(board, figure_, True), 
+                            check_diagonal_line(board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if king.position in moves:
+                                return king
+                    case 'rook':
+                        available_moves = [
+                            check_horizontal_line(board, figure_, True), 
+                            check_horizontal_line(board, figure_, False),
+                            check_vertical_line(board, figure_, True), 
+                            check_vertical_line(board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if king.position in moves:
+                                return king
+                    case 'queen':
+                        available_moves = [
+                            check_diagonal_line(board, figure_, True), 
+                            check_diagonal_line(board, figure_, False), 
+                            check_vertical_line(board, figure_, True), 
+                            check_vertical_line(board, figure_, False), 
+                            check_horizontal_line(board, figure_, True), 
+                            check_horizontal_line(board, figure_, False)
+                        ]
+                        for moves in available_moves:
+                            if king.position in moves:
+                                return king
+
+                    case 'pawn':
+                        if king.position in figure_.get_available_moves() and figure_.position.y != king.position.y:
                             return king
 
-                if figure_.name == 'pawn':
-                    if king.position in figure_.get_available_moves() and figure_.position.y != king.position.y:
-                        return king
-
-                if figure_.name == 'king':
-                    for moves in figure_.get_available_moves():
-                        if king.position in moves:
-                            return king
-        return False
+                    case 'king':
+                        for moves in figure_.get_available_moves():
+                            if king.position in moves:
+                                return king
         
     def get_available_moves_without_stalemate(self):
         new_board = Board()
@@ -139,7 +148,7 @@ class Board:
                 old_position = figure.position
                 old_cell = self.board[move_coord.x][move_coord.y]
                 figure.move(move_coord, is_check_call=True)
-                if not self.verify_check(self.board):
+                if self.verify_check(self.board) is None:
                     available_moves.append(move_coord)
                 figure.move(old_position, is_check_call=True)
                 self.board[move_coord.x][move_coord.y] = old_cell

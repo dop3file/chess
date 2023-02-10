@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import math
-from engine.headers import Coordinates, Turn
+from engine.headers import Coordinates, Turn, figure_ranks
 from engine.utils import check_horizontal_line, check_vertical_line, check_diagonal_line
                   
 
@@ -57,13 +57,10 @@ class Pawn(Figure):
 
     def upgrade_figure(self):
         new_figure_name = None
-        for name, rank in figures_ranks.items():
+        for name, rank in figure_ranks.items():
             if name in [figure.name for figure in self.board.dead_figures]:
                 new_figure_name = name
-                
-        if new_figure_name is not None:
-            self.board.board[self.position.x][self.position.y] = None
-
+            
         match new_figure_name:
             case 'knight':
                 self.board.board[self.position.x][self.position.y] = Knight(position=self.position, board=self.board, type_=self.type_)
@@ -73,8 +70,7 @@ class Pawn(Figure):
                 self.board.board[self.position.x][self.position.y] = Rook(position=self.position, board=self.board, type_=self.type_)
             case 'queen':
                 self.board.board[self.position.x][self.position.y] = Queen(position=self.position, board=self.board, type_=self.type_)
-        
-
+        self.name = self.board.board[self.position.x][self.position.y].name
     def get_available_moves(self):
         available_moves = []
         
@@ -155,15 +151,15 @@ class Knight(Figure):
         '''
         available_moves = []
         available_coords = [
-            [self.position.x - 2, self.position.y - 1],
-            [self.position.x - 2, self.position.y + 1],
-            [self.position.x + 2, self.position.y + 1],
-            [self.position.x + 2, self.position.y - 1],
-            [self.position.x - 1, self.position.y - 2],
-            [self.position.x - 1, self.position.y - 2],
-            [self.position.x + 1, self.position.y - 2],
-            [self.position.x - 1, self.position.y + 2],
-            [self.position.x + 1, self.position.y + 2]
+            (self.position.x - 2, self.position.y - 1),
+            (self.position.x - 2, self.position.y + 1),
+            (self.position.x + 2, self.position.y + 1),
+            (self.position.x + 2, self.position.y - 1),
+            (self.position.x - 1, self.position.y - 2),
+            (self.position.x - 1, self.position.y - 2),
+            (self.position.x + 1, self.position.y - 2),
+            (self.position.x - 1, self.position.y + 2),
+            (self.position.x + 1, self.position.y + 2)
         ]
         for x, y in available_coords:
             if 0 <= x < 8 and 0 <= y < 8 and (self.board.board[x][y] is None or (self.board.board[x][y].type_ != self.type_)):
@@ -265,6 +261,5 @@ class King(Figure):
                                 break
                         if is_castling:
                             available_moves.append(rook)
-        #print(available_moves)
 
         return available_moves

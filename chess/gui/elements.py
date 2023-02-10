@@ -48,9 +48,3 @@ class Button(GUIElement):
             self.button_rect.height/2 - self.text_surface.get_rect().height/2
         ])
         self.screen.blit(self.button_surface, self.button_rect)
-
-
-class MoveHighlight:
-    def __init__(self, position: Coordinates, figure: Figure):
-        self.position = position
-        self.figure = figure
