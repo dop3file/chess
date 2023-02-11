@@ -4,7 +4,9 @@ import pygame
 from engine.board import Board
 from engine.headers import Coordinates, Turn, Move
 from engine.figure import Figure
+import gui.utils
 import config
+
 
 
 class Game:
@@ -206,6 +208,9 @@ class Game:
 								move_highlight = Move(position=move, figure=piece)
 								self.available_moves_highlight.append(move_highlight)
 
-							
+				if event.type == pygame.KEYDOWN:
+					if event.key == pygame.K_ESCAPE:
+						gui.utils.startup_menu()
+
 				if event.type == pygame.QUIT:
 					exit()

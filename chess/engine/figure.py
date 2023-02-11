@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
-import math
+
 from engine.headers import Coordinates, Turn, figure_ranks
 from engine.utils import check_horizontal_line, check_vertical_line, check_diagonal_line
-                  
+import config                  
 
 
 class Figure(ABC):
@@ -11,6 +11,7 @@ class Figure(ABC):
         self.name = self.__class__.__name__.lower()
         self.board = board
         self.type_ = type_
+
     def move(self, position: Coordinates, is_check_call=False):
         if position in self.get_available_moves() or is_check_call:                
             if is_check_call:
@@ -22,7 +23,15 @@ class Figure(ABC):
 
     @abstractmethod
     def get_available_moves(self):
-        pass
+        self.get_available_moves: list[Coordinates]
+
+    def rollback(self):
+        old_position = self.position
+        def wrapper():
+            nonlocal old_position
+            self.move(old_position, is_check_call=True)
+
+        return wrapper
 
     def __repr__(self):
         return f'{self.name} x={self.position.x} y={self.position.y} {"black" if self.type_ == Turn.black.value else "white"}'
@@ -70,8 +79,8 @@ class Pawn(Figure):
                 self.board.board[self.position.x][self.position.y] = Rook(position=self.position, board=self.board, type_=self.type_)
             case 'queen':
                 self.board.board[self.position.x][self.position.y] = Queen(position=self.position, board=self.board, type_=self.type_)
-        self.name = self.board.board[self.position.x][self.position.y].name
-    def get_available_moves(self):
+        
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
         
         if self.position.x not in (0, 7):
@@ -124,7 +133,7 @@ class Rook(Figure):
         else:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) != 4 else self.position.y - 3))
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
         available_moves.extend(check_horizontal_line(self.board.board, self, True))
         available_moves.extend(check_horizontal_line(self.board.board, self, False))
@@ -145,11 +154,11 @@ class Knight(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         '''
         Функция возвращает возможные ходы в виде буквы Г(для коня)
         '''
-        available_moves = []
+        available_moves: list[Coordinates] = []
         available_coords = [
             (self.position.x - 2, self.position.y - 1),
             (self.position.x - 2, self.position.y + 1),
@@ -162,7 +171,7 @@ class Knight(Figure):
             (self.position.x + 1, self.position.y + 2)
         ]
         for x, y in available_coords:
-            if 0 <= x < 8 and 0 <= y < 8 and (self.board.board[x][y] is None or (self.board.board[x][y].type_ != self.type_)):
+            if 0 <= x < config.BOARD_WIDTH and 0 <= y < config.BOARD_HEIGHT and (self.board.board[x][y] is None or (self.board.board[x][y].type_ != self.type_)):
                 available_moves.append(Coordinates(x=x, y=y))
                 
         return available_moves
@@ -179,8 +188,8 @@ class Bishop(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
-        available_moves = []
+    def get_available_moves(self, is_check_call=False):
+        available_moves: list[Coordinates] = []
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
         available_moves.extend(check_diagonal_line(self.board.board, self, False))
 
@@ -198,7 +207,7 @@ class Queen(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
 
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
@@ -221,7 +230,7 @@ class King(Figure):
         self.is_moved = False
         
     def move(self, position, is_check_call=False):
-        if position in self.get_available_moves() or is_check_call:                
+        if is_check_call or position in self.get_available_moves():                
             if is_check_call:
                 self.board.board[position.x][position.y] = self.board.board[self.position.x][self.position.y]
                 self.board.board[self.position.x][self.position.y] = None
@@ -236,26 +245,33 @@ class King(Figure):
                     self.board.drag_figure(self, position)
                 self.is_moved = True
 
-    def castling(self, rook_position):
+    def castling(self, rook_position: Coordinates):
         if rook_position.y > self.position.y:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y + 2))
         else:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2))
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
         available_moves.extend([(coord := Coordinates(self.position.x + 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x - 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         
         available_moves = [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] and self.board.board[move.x][move.y].type_ != self.type_))]
+        rollback = self.rollback()
+        if not is_check_call:
+            for i, move in enumerate(available_moves):
+                self.move(move, is_check_call=True)
+                if self.board.verify_check(self.board.board):
+                    available_moves.pop(i)
+                rollback()
+    
         if not self.is_moved:
             if (first_rook := self.board.board[7 if self.type_ == Turn.white.value else 0][0]) and first_rook.name == 'rook' or (second_rook := self.board.board[7 if self.type_ == Turn.white.value else 0][7]) and second_rook.name == 'rook':
-
-                for rook in [Coordinates(7,0), Coordinates(7, 7), Coordinates(0,0), Coordinates(0, 7)]:
+                for rook in [Coordinates(config.BOARD_WIDTH - 1,0), Coordinates(config.BOARD_WIDTH - 1, config.BOARD_WIDTH - 1), Coordinates(0,0), Coordinates(0, config.BOARD_WIDTH - 1)]:
                     if rook.x == self.position.x:
                         is_castling = True
-                        for cell in range(self.position.y + (1 if rook.y == 7 else -1), rook.y, -1 if rook.y == 0 else 1):
+                        for cell in range(self.position.y + (1 if rook.y == config.BOARD_WIDTH - 1 else -1), rook.y, -1 if rook.y == 0 else 1):
                             if self.board.board[self.position.x][cell] is not None:
                                 is_castling = False
                                 break

@@ -1,4 +1,4 @@
-from test_utils import add_chess_module
+from _test_utils import add_chess_module
 from engine.board import Board
 from engine.headers import Coordinates
 import pytest
