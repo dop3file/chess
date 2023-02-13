@@ -58,19 +58,17 @@ class Board:
         if not self.verify_move_availability(figure, new_coordinate):
             return
 
-        old_position = figure.position
+        old_position = figure.get_position()
         old_cell = self.board[new_coordinate.x][new_coordinate.y]
         
-        self.board[new_coordinate.x][new_coordinate.y] = self.board[figure.position.x][figure.position.y]
-        self.board[figure.position.x][figure.position.y] = None
-        figure.position = new_coordinate
+        figure.set_position(new_coordinate)
 
         if self.verify_check(self.board) and self.turn == self.verify_check(self.board).type_:
             self.board[old_position.x][old_position.y] = figure
             self.board[new_coordinate.x][new_coordinate.y] = old_cell
             if old_cell is not None:
-                old_cell.position = new_coordinate
-            figure.position = old_position
+                old_cell.set_position(new_coordinate)
+            figure.set_position(old_position)
             
         else:
             if old_cell is not None:
@@ -96,7 +94,7 @@ class Board:
             for figure_ in figures:
                 match figure_.name:
                     case 'knight':
-                        if king.position in figure_.get_available_moves(is_check_call=True):
+                        if king.get_position() in figure_.get_available_moves():
                             return king
                     case 'bishop':
                         available_moves = [
@@ -104,7 +102,7 @@ class Board:
                             check_diagonal_line(board, figure_, False)
                         ]
                         for moves in available_moves:
-                            if king.position in moves:
+                            if king.get_position() in moves:
                                 return king
                     case 'rook':
                         available_moves = [
@@ -114,7 +112,7 @@ class Board:
                             check_vertical_line(board, figure_, False)
                         ]
                         for moves in available_moves:
-                            if king.position in moves:
+                            if king.get_position() in moves:
                                 return king
                     case 'queen':
                         available_moves = [
@@ -126,16 +124,16 @@ class Board:
                             check_horizontal_line(board, figure_, False)
                         ]
                         for moves in available_moves:
-                            if king.position in moves:
+                            if king.get_position() in moves:
                                 return king
 
                     case 'pawn':
-                        if king.position in figure_.get_available_moves(is_check_call=True) and figure_.position.y != king.position.y:
+                        if king.get_position() in figure_.get_available_moves() and figure_.get_position().y != king.get_position().y:
                             return king
 
                     case 'king':
-                        for moves in figure_.get_available_moves(is_check_call=True):
-                            if king.position in moves:
+                        for moves in figure_.get_available_moves():
+                            if king.get_position() in moves:
                                 return king
         
     def get_available_moves_without_stalemate(self):
@@ -145,7 +143,7 @@ class Board:
 
         for figure in [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn]:
             for move_coord in figure.get_available_moves():
-                old_position = figure.position
+                old_position = figure.get_position()
                 old_cell = self.board[move_coord.x][move_coord.y]
                 figure.move(move_coord, is_check_call=True)
                 if self.verify_check(self.board) is None:
@@ -153,7 +151,7 @@ class Board:
                 figure.move(old_position, is_check_call=True)
                 self.board[move_coord.x][move_coord.y] = old_cell
                 self.board[old_position.x][old_position.y] = figure
-                figure.position = old_position
+                figure.set_position(old_position)
                 
         return available_moves
 
