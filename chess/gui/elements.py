@@ -26,7 +26,7 @@ class Button(GUIElement):
         self.button_surface = pygame.Surface((self.width, self.height))
         self.button_rect = pygame.Rect(self.x, self.y, self.width, self.height)
 
-        font = pygame.font.Font(f'{config.BASE_STATIC_DIR}/arcadeclassic.regular.ttf', 58)
+        font = pygame.font.Font(f'{config.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
         self.text_surface = font.render(self.button_text, True, (20, 20, 20))
 
         self.background_colors = {

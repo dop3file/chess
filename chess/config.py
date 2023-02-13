@@ -1,4 +1,4 @@
-FPS = 60
-BASE_STATIC_DIR = "../static"
+FPS = 30
+BASE_IMAGE_DIR = "../static"
 BOARD_WIDTH = 8
 BOARD_HEIGHT = 8

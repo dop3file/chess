@@ -14,24 +14,24 @@ class Game:
 		self.board = board
 
 		self.WIDTH, self.HEIGHT = config.BOARD_WIDTH, config.BOARD_HEIGHT
-		self.BASE_STATIC_DIR = config.BASE_STATIC_DIR
+		self.BASE_IMAGE_DIR = config.BASE_IMAGE_DIR
 		self.TILE = 100
 		self.GAME_RES = self.WIDTH * self.TILE, self.HEIGHT * self.TILE + 125
 		self.PIECE_WIDTH, self.PIECE_HEIGHT = 90, 90
 		self.FPS = config.FPS
 		self.PIECE_IMAGES = {
-			'pawn_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/pawn.png")),
-			'pawn_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/pawn_black.png")),
-			'rook_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/rock.png")),
-			'rook_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/rock_black.png")),
-			'knight_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/knight.png")),
-			'knight_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/knight_black.png")),
-			'bishop_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/bishop_black.png")),
-			'bishop_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/bishop.png")),
-			'queen_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/queen.png")),
-			'queen_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/queen_black.png")),
-			'king_-1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/king.png")),
-			'king_1': pygame.image.load(os.path.join(f"{self.BASE_STATIC_DIR}/king_black.png")),
+			'pawn_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn.png")),
+			'pawn_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/pawn_black.png")),
+			'rook_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/rock.png")),
+			'rook_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/rock_black.png")),
+			'knight_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/knight.png")),
+			'knight_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/knight_black.png")),
+			'bishop_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/bishop_black.png")),
+			'bishop_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/bishop.png")),
+			'queen_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/queen.png")),
+			'queen_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/queen_black.png")),
+			'king_-1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king.png")),
+			'king_1': pygame.image.load(os.path.join(f"{self.BASE_IMAGE_DIR}/king_black.png")),
 		}
 		self.HIGHLIGHT_OPACITY = 75
 		self.INFO_PANEL_POS_X = 800
@@ -53,11 +53,11 @@ class Game:
 		self.select_piece = None
 		self.is_roll = False
 
-		self.font = pygame.font.Font(f'{self.BASE_STATIC_DIR}/arcadeclassic.regular.ttf', 58)
-		self.timer_font = pygame.font.Font(f'{self.BASE_STATIC_DIR}/Ubuntu-LightItalic.ttf', 24)
+		self.font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
+		self.timer_font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/Ubuntu-LightItalic.ttf', 24)
 
 		pygame.display.set_caption('Chess')
-		pygame.display.set_icon(pygame.image.load(f'{self.BASE_STATIC_DIR}/knight_black.png'))
+		pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
 
 	@staticmethod
 	def init_game(board: Board = None) -> None:
@@ -68,7 +68,7 @@ class Game:
 		game.start_game()
 
 	def draw_roll_board_button(self) -> None:
-		roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_STATIC_DIR}/reload.png'))
+		roll_board_btn = pygame.image.load(os.path.join(f'{self.BASE_IMAGE_DIR}/reload.png'))
 		roll_board_btn = pygame.transform.scale(roll_board_btn, (64,64))
 		roll_board_btn.convert()
 		self.screen.blit(roll_board_btn, (0, self.HEIGHT * self.TILE + 5))
@@ -176,8 +176,6 @@ class Game:
 			pygame.display.flip()
 			clock.tick(self.FPS)
 
-			print(f'FPS {clock.get_fps()}')
-
 			self.draw_board()
 			self.draw_highlights_moves()
 			self.draw_figures()
@@ -213,9 +211,6 @@ class Game:
 				if event.type == pygame.KEYDOWN:
 					if event.key == pygame.K_ESCAPE:
 						gui.utils.startup_menu()
-
-					if event.key == pygame.K_RIGHT:
-						self.colors['black'] = gui.utils.get_random_rgb_color()
 
 				if event.type == pygame.QUIT:
 					exit()

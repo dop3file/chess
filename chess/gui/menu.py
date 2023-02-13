@@ -12,7 +12,7 @@ class Menu:
     def __init__(self):
         self.FPS = config.FPS
         self.GAME_RES = (800, 600)
-        self.BASE_STATIC_DIR = config.BASE_STATIC_DIR
+        self.BASE_IMAGE_DIR = config.BASE_IMAGE_DIR
 
     def start_main_menu(self):
         pygame.init()
@@ -20,10 +20,10 @@ class Menu:
         
         screen = pygame.display.set_mode(self.GAME_RES)
         pygame.display.set_caption('Chess')
-        pygame.display.set_icon(pygame.image.load(f'{self.BASE_STATIC_DIR}/knight_black.png'))
+        pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
         clock = pygame.time.Clock()
 
-        pygame.mixer.music.load(f'{self.BASE_STATIC_DIR}/track.mp3')
+        pygame.mixer.music.load(f'{self.BASE_IMAGE_DIR}/track.mp3')
         pygame.mixer.music.play(-1)
 
         white = (238,238,213)
@@ -54,7 +54,7 @@ class Menu:
         
         screen = pygame.display.set_mode(self.GAME_RES)
         pygame.display.set_caption('Chess')
-        pygame.display.set_icon(pygame.image.load(f'{self.BASE_STATIC_DIR}/knight_black.png'))
+        pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
         clock = pygame.time.Clock()
 
         white = (238,238,213)
