@@ -54,10 +54,12 @@ class Game:
 		self.is_roll = False
 
 		self.font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/arcadeclassic.regular.ttf', 58)
-		self.timer_font = pygame.font.Font(f'{self.BASE_IMAGE_DIR}/Ubuntu-LightItalic.ttf', 24)
+		self.timer_font = pygame.font.SysFont('Arial', 24)
 
 		pygame.display.set_caption('Chess')
 		pygame.display.set_icon(pygame.image.load(f'{self.BASE_IMAGE_DIR}/knight_black.png'))
+		self.clock = pygame.time.Clock()
+		self.screen.fill(self.colors['white'])
 
 	@staticmethod
 	def init_game(board: Board = None) -> None:
@@ -167,15 +169,15 @@ class Game:
 			return piece
 		return None
 
+	def display_fps(self) -> None:
+		print(f'FPS {self.clock.get_fps()}')
+
 	def start_game(self):
-		self.screen.fill(self.colors['white'])
-
-		clock = pygame.time.Clock()
-
 		while True:
 			pygame.display.flip()
-			clock.tick(self.FPS)
+			self.clock.tick(self.FPS)
 
+			self.display_fps()	
 			self.draw_board()
 			self.draw_highlights_moves()
 			self.draw_figures()

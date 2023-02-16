@@ -80,7 +80,7 @@ class Pawn(Figure):
             case 'queen':
                 self.board.board[self.position.x][self.position.y] = Queen(position=self.position, board=self.board, type_=self.type_)
         
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         available_moves = []
         
         if self.position.x not in (0, 7):
@@ -133,7 +133,7 @@ class Rook(Figure):
         else:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) != 4 else self.position.y - 3))
 
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         available_moves = []
         available_moves.extend(check_horizontal_line(self.board.board, self, True))
         available_moves.extend(check_horizontal_line(self.board.board, self, False))
@@ -154,7 +154,7 @@ class Knight(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         '''
         Функция возвращает возможные ходы в виде буквы Г(для коня)
         '''
@@ -188,7 +188,7 @@ class Bishop(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         available_moves: list[Coordinates] = []
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
         available_moves.extend(check_diagonal_line(self.board.board, self, False))
@@ -207,7 +207,7 @@ class Queen(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         available_moves = []
 
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
@@ -243,7 +243,7 @@ class King(Figure):
                     self.board.count_turn -= 1
                 else: 
                     self.board.drag_figure(self, position)
-                self.is_moved = True
+            self.is_moved = True
 
     def castling(self, rook_position: Coordinates):
         if rook_position.y > self.position.y:
@@ -251,21 +251,13 @@ class King(Figure):
         else:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2))
 
-    def get_available_moves(self, is_check_call=False):
+    def get_available_moves(self):
         available_moves = []
         available_moves.extend([(coord := Coordinates(self.position.x + 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         available_moves.extend([(coord := Coordinates(self.position.x - 1, y)) for y in [self.position.y - 1, self.position.y, self.position.y + 1]])
         
         available_moves = [move for move in available_moves if (-1 < move.x < 8) and (-1 < move.y < 8) and ((self.board.board[move.x][move.y] is None) or (self.board.board[move.x][move.y] and self.board.board[move.x][move.y].type_ != self.type_))]
-        rollback = self.rollback()
-        if not is_check_call:
-            for i, move in enumerate(available_moves):
-                self.move(move, is_check_call=True)
-                if self.board.verify_check(self.board.board):
-                    available_moves.pop(i)
-                rollback()
-    
         if not self.is_moved:
             if (first_rook := self.board.board[7 if self.type_ == Turn.white.value else 0][0]) and first_rook.name == 'rook' or (second_rook := self.board.board[7 if self.type_ == Turn.white.value else 0][7]) and second_rook.name == 'rook':
                 for rook in [Coordinates(config.BOARD_WIDTH - 1,0), Coordinates(config.BOARD_WIDTH - 1, config.BOARD_WIDTH - 1), Coordinates(0,0), Coordinates(0, config.BOARD_WIDTH - 1)]:

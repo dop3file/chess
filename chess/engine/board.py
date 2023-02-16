@@ -96,7 +96,7 @@ class Board:
             for figure_ in figures:
                 match figure_.name:
                     case 'knight':
-                        if king.position in figure_.get_available_moves(is_check_call=True):
+                        if king.position in figure_.get_available_moves():
                             return king
                     case 'bishop':
                         available_moves = [
@@ -130,11 +130,11 @@ class Board:
                                 return king
 
                     case 'pawn':
-                        if king.position in figure_.get_available_moves(is_check_call=True) and figure_.position.y != king.position.y:
+                        if king.position in figure_.get_available_moves() and figure_.position.y != king.position.y:
                             return king
 
                     case 'king':
-                        for moves in figure_.get_available_moves(is_check_call=True):
+                        for moves in figure_.get_available_moves():
                             if king.position in moves:
                                 return king
         
