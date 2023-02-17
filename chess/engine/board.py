@@ -15,7 +15,7 @@ class Board:
         self.check_turn = None
         self.is_check_mate = False
 
-    def set_defautl_board(self):
+    def set_defautl_board(self) -> None:
         self.board[6][:] = [Pawn(position=Coordinates(x=6, y=y_coordinate), board=self, type_=Turn.white.value) for y_coordinate in list(range(config.BOARD_WIDTH))]
         self.board[1][:] = [Pawn(position=Coordinates(x=1, y=y_coordinate), board=self, type_=Turn.black.value) for y_coordinate in list(range(config.BOARD_WIDTH))]
         
@@ -45,7 +45,7 @@ class Board:
             return True
         return False
 
-    def verify_move_availability(self, figure: Figure, new_coordinate: Coordinates):
+    def verify_move_availability(self, figure: Figure, new_coordinate: Coordinates) -> bool:
         if self.check_turn == self.turn and new_coordinate not in self.get_available_moves_without_stalemate():
             return False
 
@@ -54,7 +54,7 @@ class Board:
 
         return True
 
-    def drag_figure(self, figure: Figure, new_coordinate: Coordinates, is_castling=False):
+    def drag_figure(self, figure: Figure, new_coordinate: Coordinates, is_castling=False) -> None:
         if not self.verify_move_availability(figure, new_coordinate):
             return
 
@@ -83,7 +83,7 @@ class Board:
         if not self.get_available_moves_without_stalemate():
             self.is_check_mate = True
         
-    def change_turn(self):
+    def change_turn(self) -> None:
         self.turn = Turn.white.value if self.turn != Turn.white.value else Turn.black.value
 
     def verify_check(self, board: list[list]) -> Figure | None:
@@ -138,12 +138,14 @@ class Board:
                             if king.position in moves:
                                 return king
         
-    def get_available_moves_without_stalemate(self, select_figure=None):
+    def get_available_moves_without_stalemate(self, select_figure: Figure = None) -> list[Coordinates]:
         new_board = Board()
         new_board.board = self.board
         available_moves = []
 
-        for figure in [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn] if select_figure is None else [select_figure]:
+        iter_target = [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn] if select_figure is None else [select_figure]
+
+        for figure in iter_target:
             for move_coord in figure.get_available_moves():
                 old_position = figure.position
                 old_cell = self.board[move_coord.x][move_coord.y]
