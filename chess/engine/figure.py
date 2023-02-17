@@ -25,14 +25,6 @@ class Figure(ABC):
     def get_available_moves(self):
         self.get_available_moves: list[Coordinates]
 
-    def rollback(self):
-        old_position = self.position
-        def wrapper():
-            nonlocal old_position
-            self.move(old_position, is_check_call=True)
-
-        return wrapper
-
     def __repr__(self):
         return f'{self.name} x={self.position.x} y={self.position.y} {"black" if self.type_ == Turn.black.value else "white"}'
 
