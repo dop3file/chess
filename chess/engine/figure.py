@@ -22,7 +22,7 @@ class Figure(ABC):
                 self.board.drag_figure(self, position)
 
     @abstractmethod
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         self.get_available_moves: list[Coordinates]
 
     def __repr__(self):
@@ -72,7 +72,7 @@ class Pawn(Figure):
             case 'queen':
                 self.board.board[self.position.x][self.position.y] = Queen(position=self.position, board=self.board, type_=self.type_)
         
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
         
         if self.position.x not in (0, 7):
@@ -94,6 +94,10 @@ class Pawn(Figure):
                 if (cell := self.board.board[(x := self.position.x + (1 * self.type_))][(y := self.position.y - 1)]) is not None:
                     if cell.type_ != self.type_:
                         available_moves.append(Coordinates(x=x, y=y))
+
+        if is_check_call:
+            available_moves = [move for move in available_moves if move in self.board.get_available_moves_without_stalemate(select_figure=self)]
+        
 
         return available_moves
 
@@ -125,12 +129,16 @@ class Rook(Figure):
         else:
             self.board.drag_figure(self, Coordinates(x=self.position.x, y=self.position.y - 2 if abs(self.position.y - king_position.y) != 4 else self.position.y - 3))
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
         available_moves.extend(check_horizontal_line(self.board.board, self, True))
         available_moves.extend(check_horizontal_line(self.board.board, self, False))
         available_moves.extend(check_vertical_line(self.board.board, self, True))
         available_moves.extend(check_vertical_line(self.board.board, self, False))
+
+        if is_check_call:
+            available_moves = [move for move in available_moves if move in self.board.get_available_moves_without_stalemate(select_figure=self)]
+        
 
         return available_moves
 
@@ -146,7 +154,7 @@ class Knight(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         '''
         Функция возвращает возможные ходы в виде буквы Г(для коня)
         '''
@@ -165,7 +173,11 @@ class Knight(Figure):
         for x, y in available_coords:
             if 0 <= x < config.BOARD_WIDTH and 0 <= y < config.BOARD_HEIGHT and (self.board.board[x][y] is None or (self.board.board[x][y].type_ != self.type_)):
                 available_moves.append(Coordinates(x=x, y=y))
-                
+
+        if is_check_call:
+            available_moves = [move for move in available_moves if move in self.board.get_available_moves_without_stalemate(select_figure=self)]
+             
+
         return available_moves
 
 
@@ -180,10 +192,14 @@ class Bishop(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves: list[Coordinates] = []
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
         available_moves.extend(check_diagonal_line(self.board.board, self, False))
+
+        if is_check_call:
+            available_moves = [move for move in available_moves if move in self.board.get_available_moves_without_stalemate(select_figure=self)]
+        
 
         return available_moves
 
@@ -199,7 +215,7 @@ class Queen(Figure):
     def move(self, position, is_check_call=False):
         super().move(position, is_check_call)
 
-    def get_available_moves(self):
+    def get_available_moves(self, is_check_call=False):
         available_moves = []
 
         available_moves.extend(check_diagonal_line(self.board.board, self, True))
@@ -208,6 +224,10 @@ class Queen(Figure):
         available_moves.extend(check_horizontal_line(self.board.board, self, False))
         available_moves.extend(check_vertical_line(self.board.board, self, True))
         available_moves.extend(check_vertical_line(self.board.board, self, False))
+
+        if is_check_call:
+            available_moves = [move for move in available_moves if move in self.board.get_available_moves_without_stalemate(select_figure=self)]
+        
 
         return available_moves
 

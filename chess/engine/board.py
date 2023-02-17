@@ -139,8 +139,6 @@ class Board:
                                 return king
         
     def get_available_moves_without_stalemate(self, select_figure: Figure = None) -> list[Coordinates]:
-        new_board = Board()
-        new_board.board = self.board
         available_moves = []
 
         iter_target = [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn] if select_figure is None else [select_figure]
