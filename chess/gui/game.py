@@ -206,7 +206,7 @@ class Game:
 						if self.is_click_on_board(click_position) and (piece := self.is_valid_piece(click_position)):
 							self.select_piece = piece
 							self.available_moves_highlight = []
-							for move in self.select_piece.get_available_moves():
+							for move in self.select_piece.get_available_moves() if self.select_piece.name != 'king' else self.select_piece.get_available_moves(is_check_call=True):
 								move_highlight = Move(position=move, figure=piece)
 								self.available_moves_highlight.append(move_highlight)
 

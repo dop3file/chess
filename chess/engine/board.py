@@ -138,12 +138,12 @@ class Board:
                             if king.position in moves:
                                 return king
         
-    def get_available_moves_without_stalemate(self):
+    def get_available_moves_without_stalemate(self, select_figure=None):
         new_board = Board()
         new_board.board = self.board
         available_moves = []
 
-        for figure in [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn]:
+        for figure in [figure_ for line in self.board for figure_ in line if figure_ and figure_.type_ == self.turn] if select_figure is None else [select_figure]:
             for move_coord in figure.get_available_moves():
                 old_position = figure.position
                 old_cell = self.board[move_coord.x][move_coord.y]
