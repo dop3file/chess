@@ -148,7 +148,7 @@ class Board:
                 old_position = figure.position
                 old_cell = self.board[move_coord.x][move_coord.y]
                 figure.move(move_coord, is_check_call=True)
-                if self.verify_check(self.board) is None:
+                if self.verify_check(self.board) is None or self.verify_check(self.board).type_ != self.turn:
                     available_moves.append(move_coord)
                 figure.move(old_position, is_check_call=True)
                 self.board[move_coord.x][move_coord.y] = old_cell
